@@ -12,13 +12,6 @@ import org.slf4j.LoggerFactory;
 
 /** Bridges the pure composer to Minecraft's focused vanilla text box. */
 public final class HangulController {
-	private static final int ACTION_PRESS = 1;
-	private static final int KEY_BACKSPACE = 259;
-	private static final int KEY_CAPS_LOCK = 280;
-	private static final int KEY_F6 = 295;
-	private static final int KEY_LEFT_SHIFT = 340;
-	private static final int KEY_RIGHT_SHIFT = 344;
-
 	private static final Logger LOGGER = LoggerFactory.getLogger("hangul");
 	private static final HangulComposer COMPOSER = new HangulComposer();
 
@@ -37,9 +30,9 @@ public final class HangulController {
 			return false;
 		}
 
-		Screen screen = minecraft.gui.screen();
-		if (isToggleKey(event.key()) && screen != null && minecraft.gui.overlay() == null) {
-			if (action == ACTION_PRESS) {
+		Screen screen = MinecraftUiCompat.screen(minecraft);
+		if (isToggleKey(event.key()) && screen != null && !MinecraftUiCompat.hasOverlay(minecraft)) {
+			if (action == InputKeyCompat.ACTION_PRESS) {
 				commit();
 				forcedHangulMode = !forcedHangulMode;
 				EditBox box = activeBox(minecraft);
@@ -49,7 +42,7 @@ public final class HangulController {
 				Component status = Component.literal(
 					forcedHangulMode ? "\uAC15\uC81C \uD55C\uAE00 [\uAC00]" : "\uC790\uB3D9 \uC785\uB825 [IME]"
 				);
-				minecraft.gui.hud.setOverlayMessage(status, false);
+				MinecraftUiCompat.showStatus(minecraft, status);
 				GuiEventListener focused = screen.getFocused();
 				LOGGER.info(
 					"Input mode changed to {} with key {} (screen={}, focused={})",
@@ -71,15 +64,16 @@ public final class HangulController {
 		}
 
 		ensureContext(box);
-		if (isPlainLetter(event)) {
-			HangulComposer.Edit edit = COMPOSER.inputDubeolsik(event.key(), event.hasShiftDown());
+		int latinLetter = plainLatinLetter(event);
+		if (latinLetter >= 0) {
+			HangulComposer.Edit edit = COMPOSER.inputDubeolsik(latinLetter, event.hasShiftDown());
 			if (edit != null) {
 				apply(box, edit);
 				return true;
 			}
 		}
 
-		if (event.key() == KEY_BACKSPACE && COMPOSER.isComposing()) {
+		if (event.key() == InputKeyCompat.KEY_BACKSPACE && COMPOSER.isComposing()) {
 			HangulComposer.Edit edit = COMPOSER.backspace();
 			if (edit != null) {
 				apply(box, edit);
@@ -112,8 +106,8 @@ public final class HangulController {
 	}
 
 	private static EditBox activeBox(final Minecraft minecraft) {
-		Screen screen = minecraft.gui.screen();
-		if (screen == null || minecraft.gui.overlay() != null) {
+		Screen screen = MinecraftUiCompat.screen(minecraft);
+		if (screen == null || MinecraftUiCompat.hasOverlay(minecraft)) {
 			return null;
 		}
 
@@ -165,22 +159,23 @@ public final class HangulController {
 	}
 
 	private static boolean commitsComposition(final int key) {
-		return !(key >= 65 && key <= 90)
-			&& key != KEY_LEFT_SHIFT
-			&& key != KEY_RIGHT_SHIFT
-			&& key != KEY_CAPS_LOCK;
+		return InputKeyCompat.latinLetter(key) < 0
+			&& key != InputKeyCompat.KEY_LEFT_SHIFT
+			&& key != InputKeyCompat.KEY_RIGHT_SHIFT
+			&& key != InputKeyCompat.KEY_CAPS_LOCK;
 	}
 
 	private static boolean isToggleKey(final int key) {
-		return key == KEY_F6;
+		return key == InputKeyCompat.KEY_F6;
 	}
 
-	private static boolean isPlainLetter(final KeyEvent event) {
-		return event.key() >= 65
-			&& event.key() <= 90
-			&& !event.hasControlDownWithQuirk()
+	private static int plainLatinLetter(final KeyEvent event) {
+		if (!event.hasControlDownWithQuirk()
 			&& !event.hasAltDown()
-			&& (event.modifiers() & 8) == 0;
+			&& (event.modifiers() & InputKeyCompat.MOD_SUPER) == 0) {
+			return InputKeyCompat.latinLetter(event);
+		}
+		return -1;
 	}
 
 	private static boolean isLatinLetter(final int codePoint) {

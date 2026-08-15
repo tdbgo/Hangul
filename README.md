@@ -1,8 +1,8 @@
-# Hangul
+# Hangul 한글
 
 ![Hangul icon](src/main/resources/assets/hangul/icon.png)
 
-Minecraft Java Edition 26.2용 경량 Fabric 한글 입력 패치입니다. 입력 모드를 별도로 관리하게 만들기보다, 평소 Windows 입력 방식이 게임 안에서도 자연스럽게 이어지도록 설계했습니다.
+Minecraft Java Edition 26.1–26.2와 26.3 Snapshot 1–8용 경량 Fabric 한글 입력 패치입니다. 입력 모드를 별도로 관리하게 만들기보다, 평소 Windows 입력 방식이 게임 안에서도 자연스럽게 이어지도록 설계했습니다.
 
 Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecraft chat, books, signs, commands, items, recipes, and Hanja conversion.
 
@@ -23,7 +23,7 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 ## 입력 구조
 
 - 기본값은 OS IME 자동 추종
-- Minecraft 26.2의 `PreeditEvent`를 입력줄 안에 직접 합성 렌더링
+- Minecraft 26.1+의 IME preedit 이벤트를 입력줄 안에 직접 합성 렌더링
 - 단일행 조합 문자열에는 밑줄과 실제 IME 커서 위치 표시
 - 조합 중에는 실제 `EditBox` 값과 서버 명령어 추천 패킷을 변경하지 않음
 - 문자 확정 시에만 바닐라 입력 경로로 값 반영
@@ -32,14 +32,14 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 - 표지판의 각 줄과 3D 변환된 커서 위치에서 인라인 조합 지원
 - 채팅·명령어·명령어 블록·서버 주소 등 바닐라 단일행 입력 지원
 - 운영체제 한자 후보창을 현재 게임 커서 위치에 표시
-- 창작 인벤토리와 조합법 책에서 초성 검색 지원: `ㅊㄴㅁ` → `참나무`
-- 영문 상태로 잘못 입력한 두벌식 검색 복구: `ckaskan` → `참나무`
+- 창작 인벤토리와 조합법 책에서 초성 검색 지원: `ㄷㅇㅇㅁㄷ` → `다이아몬드`
+- 영문 상태로 잘못 입력한 두벌식 검색 복구: `rmarhl` → `금괴`
 - 공백으로 떨어진 여러 검색어가 모두 포함된 결과를 찾는 다중 토큰 폴백
 - 한글 IME 조합 중인 마지막 글자까지 검색 결과에 즉시 반영
 - 한글 상태로 영문 명령어의 물리 키를 누른 경우와 `디버그` 같은 음차 명령의 Tab 추천 복구
 - F6 강제 모드에서는 독립 두벌식 조합기 사용
 - Fabric API, Mod Menu, 네이티브 라이브러리 불필요
-- Minecraft 26.2 / Fabric Loader 0.19.3 / Java 25 전용
+- Minecraft 26.1–26.2 및 26.3 Snapshot 1–8 / Fabric Loader 0.19.3 이상 / Java 25 이상
 
 ## Hangul의 강점
 
@@ -56,9 +56,9 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 
 창작 인벤토리 검색창과 조합법 책에서 다음 입력을 그대로 사용할 수 있습니다.
 
-- `ㅊㄴㅁ`: 이름에 `참나무`처럼 해당 초성이 들어간 항목
-- `ckaskan`: 두벌식으로 변환한 `참나무` 검색
-- `짙은 판자`: 두 단어가 모두 들어간 항목을 전체 문구가 붙어 있지 않아도 검색
+- `ㄷㅇㅇㅁㄷ`: 이름에 `다이아몬드`처럼 해당 초성이 들어간 항목
+- `rmarhl`: 두벌식으로 변환한 `금괴` 검색
+- `주괴 철`: 단어 순서와 관계없이 `철 주괴`처럼 두 단어가 모두 들어간 항목
 
 초성은 언어가 바뀌거나 검색 트리가 다시 만들어질 때 한 번 색인됩니다. 매 프레임 전체 아이템을 순회하지 않으며, IME 조합 중 검색도 실제 입력값이나 네트워크 패킷을 변경하지 않습니다.
 
@@ -66,7 +66,7 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 
 ## 설치
 
-1. Minecraft 26.2용 Fabric Loader 0.19.3 이상을 설치합니다.
+1. 사용 중인 Minecraft 버전에 맞는 Fabric Loader 0.19.3 이상을 설치합니다.
 2. [Modrinth](https://modrinth.com/mod/hangul)에서 최신 JAR을 내려받아 Minecraft의 `mods` 폴더에 넣습니다.
 3. 게임을 실행하면 자동 IME 모드로 시작합니다.
 
@@ -78,7 +78,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 
 빌드는 Java 25를 선택한 뒤 클린 빌드, 리맵, 두벌식 조합, 초성·자판 변환, 명령어 복구 및 인라인 preedit 회귀 테스트를 수행합니다.
 
-구조와 성능 경계는 [아키텍처 문서](docs/ARCHITECTURE.md), 기여 코드·자산의 출처 기준은 [기여 안내](CONTRIBUTING.md), 포함된 이미지의 출처는 [자산 출처 문서](docs/ASSET_PROVENANCE.md), 보안 신고는 [보안 정책](SECURITY.md), 공개 전 검사는 [릴리스 체크리스트](docs/RELEASE_CHECKLIST.md)에 정리되어 있습니다.
+구조와 성능 경계는 [아키텍처 문서](docs/ARCHITECTURE.md), 버전별 검증 범위는 [호환성 문서](docs/COMPATIBILITY.md), 기여 코드·자산의 출처 기준은 [기여 안내](CONTRIBUTING.md), 포함된 이미지의 출처는 [자산 출처 문서](docs/ASSET_PROVENANCE.md), 보안 신고는 [보안 정책](SECURITY.md), 공개 전 검사는 [릴리스 체크리스트](docs/RELEASE_CHECKLIST.md)에 정리되어 있습니다.
 
 ## 현재 범위
 

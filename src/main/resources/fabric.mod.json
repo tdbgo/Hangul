@@ -6,7 +6,7 @@
 	],
 	"version": "${version}",
 	"name": "Hangul",
-	"description": "Hangul (alias: Hangeul) native Korean IME plus choseong, Dubeolsik layout, recipe, item, and command search for Minecraft 26.2.",
+	"description": "Hangul (alias: Hangeul) native Korean IME plus choseong, Dubeolsik layout, recipe, item, and command search for Minecraft.",
 	"authors": [
 		"PLAYCITY"
 	],
@@ -26,7 +26,20 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.19.3",
-		"minecraft": "26.2",
+		"minecraft": [
+			"26.1",
+			"26.1.1",
+			"26.1.2",
+			"26.2",
+			"26.3-snapshot-1",
+			"26.3-snapshot-2",
+			"26.3-snapshot-3",
+			"26.3-snapshot-4",
+			"26.3-snapshot-5",
+			"26.3-snapshot-6",
+			"26.3-snapshot-7",
+			"26.3-snapshot-8"
+		],
 		"java": ">=25"
 	}
 }
