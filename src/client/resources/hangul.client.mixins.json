@@ -1,0 +1,23 @@
+{
+	"required": true,
+	"package": "kr.playcity.hangul.mixin",
+	"compatibilityLevel": "JAVA_25",
+	"client": [
+		"AbstractSignEditScreenMixin",
+		"CommandSuggestionsMixin",
+		"CreativeModeInventoryScreenMixin",
+		"EditBoxMixin",
+		"IMEPreeditOverlayAccessor",
+		"KeyboardHandlerMixin",
+		"MultiLineEditBoxMixin",
+		"MultilineTextFieldAccessor",
+		"RecipeBookComponentMixin",
+		"SearchTreeMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

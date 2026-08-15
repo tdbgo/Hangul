@@ -1,0 +1,32 @@
+{
+	"schemaVersion": 1,
+	"id": "hangul",
+	"provides": [
+		"hangeul"
+	],
+	"version": "${version}",
+	"name": "Hangul",
+	"description": "Hangul (alias: Hangeul) native Korean IME plus choseong, Dubeolsik layout, recipe, item, and command search for Minecraft 26.2.",
+	"authors": [
+		"PLAYCITY"
+	],
+	"contact": {
+		"homepage": "https://modrinth.com/mod/hangul",
+		"sources": "https://github.com/tdbgo/Hangul",
+		"issues": "https://github.com/tdbgo/Hangul/issues"
+	},
+	"license": "MIT",
+	"icon": "assets/hangul/icon.png",
+	"environment": "client",
+	"mixins": [
+		{
+			"config": "hangul.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "26.2",
+		"java": ">=25"
+	}
+}
