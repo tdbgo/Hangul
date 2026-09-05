@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.3.0-beta.5 (unreleased)
+## 1.3.0-beta.5 (2026-09-05)
 
 - Minecraft 26.3 Snapshot 9–10 및 Pre-release 1–2 대상 추가
 - Fabric이 시험판 버전을 정규화하는 방식에 맞춰 지원 선언 수정: 시험판에서 버전 불일치로 실행이 거부되는 문제 해결

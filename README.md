@@ -64,6 +64,16 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 
 명령어 입력에서 한글 상태인 줄 모르고 영문 명령어의 물리 키를 누른 경우, `/` 뒤의 한글을 영문 키로 역변환해 현재 서버가 허용한 리터럴 명령을 Tab 후보로 보여 줍니다. `디버그` → `debug`, `메시지` → `message`, `게임모드` → `gamemode`처럼 한글로 음차한 명령도 자음 발음 키가 맞으면 찾습니다. 고정 번역 사전이 아니므로 사용자 서버 명령에도 자동 적용되지만, `날씨` → `weather`처럼 뜻이 다른 단어를 번역하는 기능은 아닙니다.
 
+## 사용 화면
+
+`ㄷㅇㅇㅁㄷ`로 다이아몬드 관련 아이템을 찾는 모습입니다.
+
+![창작 인벤토리에서 초성으로 다이아몬드 검색](docs/images/korean-initial-search.png)
+
+채팅 입력 예시입니다.
+
+![채팅 입력창의 한국어 문장](docs/images/korean-chat-input.png)
+
 ## 설치
 
 1. 사용 중인 Minecraft 버전에 맞는 Fabric Loader 0.19.3 이상을 설치합니다.

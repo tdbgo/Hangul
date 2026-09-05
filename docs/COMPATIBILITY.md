@@ -8,7 +8,7 @@ The 1.3.0-beta.5 candidate targets the following matrix. Development uses Java 2
 
 Compilation uses the 0.19.3 Loader API so the emitted Mixin annotation format remains compatible with that minimum. Development and runtime tests resolve the selected Loader's own Mixin/MixinExtras libraries from its installer metadata. This separates the compiler API from the runtime without bundling either in Hangul. Minimum-Loader checks also passed on 26.1, 26.2 and 26.3-pre-2.
 
-On 2026-09-05 the same stable-built candidate passed all 16 targets on Windows: 251 metadata/bytecode checks per target, 13 transformed game classes with 42 installed hooks, and headless search/widget regression tests. The Linux CI matrix is configured but has not yet run for this unpublished candidate.
+On 2026-09-05 the same stable-built candidate passed all 16 targets on Windows: 251 metadata/bytecode checks per target, 13 transformed game classes with 42 installed hooks, and headless search/widget regression tests. The [build workflow](https://github.com/tdbgo/Hangul/actions/workflows/build.yml) records remote CI results separately.
 
 | Minecraft | Loader | Candidate scope | Input backend |
 | --- | --- | --- | --- |
@@ -18,7 +18,9 @@ On 2026-09-05 the same stable-built candidate passed all 16 targets on Windows: 
 | 26.3-snapshot-4 through snapshot-10 | 0.19.3+ | Experimental | SDL3 |
 | 26.3-pre-1, 26.3-pre-2 | 0.19.3+ | Experimental | SDL3 |
 
-Snapshots and pre-releases remain experimental. Headless tests load all 13 targeted game classes through Fabric, verify the installed hooks, exercise a real search tree and run transformed single-line and multiline widgets with deterministic font metrics. They test temporary-value restoration, selection replacement, unchanged-frame layout reuse and font-cache invalidation. They do not open a native window or exercise Windows IME, Hanja candidates, graphics drivers, GUI scaling or fullscreen. Those interactive checks remain a release requirement; no new native IME pass is claimed for this candidate.
+Snapshots and pre-releases remain experimental. Headless tests load all 13 targeted game classes through Fabric, verify the installed hooks, exercise a real search tree and run transformed single-line and multiline widgets with deterministic font metrics. They test temporary-value restoration, selection replacement, unchanged-frame layout reuse and font-cache invalidation. They do not open a native window or exercise Windows IME, Hanja candidates, graphics drivers, GUI scaling or fullscreen.
+
+Windows Minecraft 26.2 was also tested in-game with the beta.5 JAR: native composition appeared before confirmation without F6, Backspace removed the final consonant, Enter sent one completed chat message, and book composition appeared inline. Follow-up manual checks on the installed beta.5 client were reported successful for books, signs, Hanja conversion and window switching. This interactive result applies to 26.2, not to the 26.3 experimental targets.
 
 ## Launcher IDs and Fabric predicates
 
