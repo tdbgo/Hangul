@@ -1,0 +1,10 @@
+{
+	"schemaVersion": 1,
+	"id": "hangul_verification",
+	"version": "1.0.0",
+	"name": "Hangul verification fixture",
+	"environment": "client",
+	"entrypoints": {
+		"preLaunch": ["kr.playcity.hangul.verification.MixinApplicationCheck"]
+	}
+}

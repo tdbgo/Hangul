@@ -4,11 +4,8 @@ import kr.playcity.hangul.KoreanSearch;
 import net.minecraft.client.searchtree.SearchTree;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -20,15 +17,5 @@ public interface SearchTreeMixin {
 		final Function<T, Stream<String>> vanillaExtractor
 	) {
 		return value -> vanillaExtractor.apply(value).flatMap(KoreanSearch::indexTerms);
-	}
-
-	@Inject(method = "plainText", at = @At("RETURN"), cancellable = true)
-	private static <T> void hangul$addKeyboardLayoutSearch(
-		final List<T> contents,
-		final Function<T, Stream<String>> textExtractor,
-		final CallbackInfoReturnable<SearchTree<T>> callback
-	) {
-		SearchTree<T> vanilla = callback.getReturnValue();
-		callback.setReturnValue(query -> KoreanSearch.search(vanilla::search, query));
 	}
 }

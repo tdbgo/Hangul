@@ -1,5 +1,12 @@
 package kr.playcity.hangul.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import java.util.ArrayList;
+import java.util.List;
+import kr.playcity.hangul.FontLayoutRevision;
+import kr.playcity.hangul.LayoutCache;
+import kr.playcity.hangul.PreeditCache;
 import kr.playcity.hangul.InlinePreedit;
 import kr.playcity.hangul.NativeImeSupport;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -28,10 +35,8 @@ public abstract class MultiLineEditBoxMixin {
 	@Unique private PreeditEvent hangul$preedit;
 	@Unique private int hangul$preeditStart;
 	@Unique private int hangul$preeditEnd;
-	@Unique private boolean hangul$renderInjected;
-	@Unique private String hangul$savedValue;
-	@Unique private int hangul$savedCursor;
-	@Unique private int hangul$savedSelection;
+	@Unique private final PreeditCache hangul$visualCache = new PreeditCache();
+	@Unique private final LayoutCache<List<?>> hangul$layoutCache = new LayoutCache<>();
 
 	@Inject(method = "preeditUpdated", at = @At("HEAD"))
 	private void hangul$onPreedit(
@@ -81,20 +86,21 @@ public abstract class MultiLineEditBoxMixin {
 		hangul$clearPreedit();
 	}
 
-	@Inject(method = "extractContents", at = @At("HEAD"))
-	private void hangul$injectInlinePreedit(
+	@WrapMethod(method = "extractContents")
+	private void hangul$renderInlinePreedit(
 		final GuiGraphicsExtractor graphics,
 		final int mouseX,
 		final int mouseY,
 		final float partialTick,
-		final CallbackInfo callback
+		final Operation<Void> original
 	) {
 		if (hangul$preedit == null || !hangul$hasValidRange()) {
+			original.call(graphics, mouseX, mouseY, partialTick);
 			return;
 		}
 
 		MultilineTextFieldAccessor fields = (MultilineTextFieldAccessor) textField;
-		InlinePreedit.Visual visual = InlinePreedit.merge(
+		InlinePreedit.Visual visual = hangul$visualCache.get(
 			textField.value(),
 			hangul$preeditStart,
 			hangul$preeditEnd,
@@ -102,35 +108,32 @@ public abstract class MultiLineEditBoxMixin {
 			hangul$preedit.caretPosition()
 		);
 
-		hangul$savedValue = fields.hangul$getValue();
-		hangul$savedCursor = fields.hangul$getCursor();
-		hangul$savedSelection = fields.hangul$getSelectCursor();
-		fields.hangul$setValue(visual.value());
-		fields.hangul$setCursor(visual.cursor());
-		fields.hangul$setSelectCursor(visual.cursor());
-		fields.hangul$reflowDisplayLines();
-		hangul$renderInjected = true;
-	}
-
-	@Inject(method = "extractContents", at = @At("RETURN"))
-	private void hangul$restoreAfterInlinePreedit(
-		final GuiGraphicsExtractor graphics,
-		final int mouseX,
-		final int mouseY,
-		final float partialTick,
-		final CallbackInfo callback
-	) {
-		if (!hangul$renderInjected) {
-			return;
+		String savedValue = fields.hangul$getValue();
+		int savedCursor = fields.hangul$getCursor();
+		int savedSelection = fields.hangul$getSelectCursor();
+		List<?> savedLines = fields.hangul$getDisplayLines();
+		int width = fields.hangul$getWidth();
+		long revision = FontLayoutRevision.current();
+		try {
+			fields.hangul$setValue(visual.value());
+			fields.hangul$setCursor(visual.cursor());
+			fields.hangul$setSelectCursor(visual.cursor());
+			List<?> lines = hangul$layoutCache.get(visual.value(), width, revision);
+			if (lines == null) {
+				lines = new ArrayList<>();
+				fields.hangul$setDisplayLines(lines);
+				fields.hangul$reflowDisplayLines();
+				hangul$layoutCache.put(visual.value(), width, revision, lines);
+			} else {
+				fields.hangul$setDisplayLines(lines);
+			}
+			original.call(graphics, mouseX, mouseY, partialTick);
+		} finally {
+			fields.hangul$setValue(savedValue);
+			fields.hangul$setCursor(savedCursor);
+			fields.hangul$setSelectCursor(savedSelection);
+			fields.hangul$setDisplayLines(savedLines);
 		}
-
-		MultilineTextFieldAccessor fields = (MultilineTextFieldAccessor) textField;
-		fields.hangul$setValue(hangul$savedValue);
-		fields.hangul$setCursor(hangul$savedCursor);
-		fields.hangul$setSelectCursor(hangul$savedSelection);
-		fields.hangul$reflowDisplayLines();
-		hangul$savedValue = null;
-		hangul$renderInjected = false;
 	}
 
 	@Redirect(
@@ -161,6 +164,8 @@ public abstract class MultiLineEditBoxMixin {
 
 	@Unique
 	private void hangul$clearPreedit() {
+		hangul$visualCache.clear();
+		hangul$layoutCache.clear();
 		hangul$preedit = null;
 		hangul$preeditStart = 0;
 		hangul$preeditEnd = 0;

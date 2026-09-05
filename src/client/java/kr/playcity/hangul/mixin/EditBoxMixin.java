@@ -1,9 +1,12 @@
 package kr.playcity.hangul.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import kr.playcity.hangul.HangulController;
 import kr.playcity.hangul.InlinePreedit;
 import kr.playcity.hangul.NativeImeSupport;
 import kr.playcity.hangul.PreeditValueProvider;
+import kr.playcity.hangul.PreeditCache;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
@@ -33,11 +36,7 @@ public abstract class EditBoxMixin implements PreeditValueProvider {
 	@Unique private PreeditEvent hangul$preedit;
 	@Unique private int hangul$preeditStart;
 	@Unique private int hangul$preeditEnd;
-	@Unique private boolean hangul$renderInjected;
-	@Unique private String hangul$savedValue;
-	@Unique private int hangul$savedDisplayPos;
-	@Unique private int hangul$savedCursorPos;
-	@Unique private int hangul$savedHighlightPos;
+	@Unique private final PreeditCache hangul$visualCache = new PreeditCache();
 	@Unique private int hangul$renderCompositionStart;
 	@Unique private int hangul$renderCompositionEnd;
 
@@ -58,7 +57,8 @@ public abstract class EditBoxMixin implements PreeditValueProvider {
 
 	@Inject(method = "preeditUpdated", at = @At("HEAD"), cancellable = true)
 	private void hangul$onPreedit(final PreeditEvent event, final CallbackInfoReturnable<Boolean> callback) {
-		if (HangulController.isForcedHangulMode() || event == null || event.fullText().isEmpty()) {
+		if (HangulController.isForcedHangulMode((EditBox) (Object) this)
+			|| event == null || event.fullText().isEmpty()) {
 			hangul$clearPreedit();
 		} else {
 			if (hangul$preedit == null || !hangul$hasValidRange()) {
@@ -76,6 +76,7 @@ public abstract class EditBoxMixin implements PreeditValueProvider {
 	private void hangul$onFocusChanged(final boolean focused, final CallbackInfo callback) {
 		if (!focused) {
 			hangul$clearPreedit();
+			HangulController.onFocusLost((EditBox) (Object) this);
 		}
 	}
 
@@ -84,21 +85,22 @@ public abstract class EditBoxMixin implements PreeditValueProvider {
 		hangul$clearPreedit();
 	}
 
-	@Inject(method = "extractWidgetRenderState", at = @At("HEAD"))
-	private void hangul$injectInlinePreedit(
+	@WrapMethod(method = "extractWidgetRenderState")
+	private void hangul$renderInlinePreedit(
 		final GuiGraphicsExtractor graphics,
 		final int mouseX,
 		final int mouseY,
 		final float partialTick,
-		final CallbackInfo callback
+		final Operation<Void> original
 	) {
 		EditBox box = (EditBox) (Object) this;
-		if (hangul$preedit == null || HangulController.isForcedHangulMode()
+		if (hangul$preedit == null || HangulController.isForcedHangulMode(box)
 			|| !box.isVisible() || !hangul$hasValidRange()) {
+			original.call(graphics, mouseX, mouseY, partialTick);
 			return;
 		}
 
-		InlinePreedit.Visual visual = InlinePreedit.merge(
+		InlinePreedit.Visual visual = hangul$visualCache.get(
 			value,
 			hangul$preeditStart,
 			hangul$preeditEnd,
@@ -106,50 +108,35 @@ public abstract class EditBoxMixin implements PreeditValueProvider {
 			hangul$preedit.caretPosition()
 		);
 
-		hangul$savedValue = value;
-		hangul$savedDisplayPos = displayPos;
-		hangul$savedCursorPos = cursorPos;
-		hangul$savedHighlightPos = highlightPos;
-		value = visual.value();
-		cursorPos = visual.cursor();
-		highlightPos = cursorPos;
-		hangul$renderCompositionStart = visual.compositionStart();
-		hangul$renderCompositionEnd = visual.compositionEnd();
-		hangul$scrollVisualCursor(box);
-		hangul$renderInjected = true;
-	}
-
-	@Inject(method = "extractWidgetRenderState", at = @At("RETURN"))
-	private void hangul$restoreAfterInlinePreedit(
-		final GuiGraphicsExtractor graphics,
-		final int mouseX,
-		final int mouseY,
-		final float partialTick,
-		final CallbackInfo callback
-	) {
-		if (!hangul$renderInjected) {
-			return;
-		}
-
+		String savedValue = value;
+		int savedDisplayPos = displayPos;
+		int savedCursorPos = cursorPos;
+		int savedHighlightPos = highlightPos;
 		try {
-			hangul$drawCompositionUnderline(graphics, (EditBox) (Object) this);
+			value = visual.value();
+			cursorPos = visual.cursor();
+			highlightPos = cursorPos;
+			hangul$renderCompositionStart = visual.compositionStart();
+			hangul$renderCompositionEnd = visual.compositionEnd();
+			hangul$scrollVisualCursor(box);
+			original.call(graphics, mouseX, mouseY, partialTick);
+			hangul$drawCompositionUnderline(graphics, box);
 		} finally {
-			value = hangul$savedValue;
-			displayPos = hangul$savedDisplayPos;
-			cursorPos = hangul$savedCursorPos;
-			highlightPos = hangul$savedHighlightPos;
-			hangul$savedValue = null;
-			hangul$renderInjected = false;
+			value = savedValue;
+			displayPos = savedDisplayPos;
+			cursorPos = savedCursorPos;
+			highlightPos = savedHighlightPos;
 		}
 	}
 
 	@Unique
 	@Override
 	public String hangul$getVisualValue() {
-		if (hangul$preedit == null || HangulController.isForcedHangulMode() || !hangul$hasValidRange()) {
+		if (hangul$preedit == null || HangulController.isForcedHangulMode((EditBox) (Object) this)
+			|| !hangul$hasValidRange()) {
 			return value;
 		}
-		return InlinePreedit.merge(
+		return hangul$visualCache.get(
 			value,
 			hangul$preeditStart,
 			hangul$preeditEnd,
@@ -167,6 +154,7 @@ public abstract class EditBoxMixin implements PreeditValueProvider {
 
 	@Unique
 	private void hangul$clearPreedit() {
+		hangul$visualCache.clear();
 		hangul$preedit = null;
 		hangul$preeditStart = 0;
 		hangul$preeditEnd = 0;

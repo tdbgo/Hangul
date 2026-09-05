@@ -1,5 +1,8 @@
 package kr.playcity.hangul.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import kr.playcity.hangul.PreeditCache;
 import kr.playcity.hangul.InlinePreedit;
 import kr.playcity.hangul.NativeImeSupport;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -16,7 +19,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /** Adds inline OS IME composition and native candidate positioning to sign editors. */
@@ -31,11 +33,7 @@ public abstract class AbstractSignEditScreenMixin {
 	@Unique private int hangul$preeditStart;
 	@Unique private int hangul$preeditEnd;
 	@Unique private int hangul$preeditLine = -1;
-	@Unique private boolean hangul$renderInjected;
-	@Unique private int hangul$savedLine;
-	@Unique private String hangul$savedMessage;
-	@Unique private int hangul$savedCursor;
-	@Unique private int hangul$savedSelection;
+	@Unique private final PreeditCache hangul$visualCache = new PreeditCache();
 
 	@Inject(method = "preeditUpdated", at = @At("HEAD"))
 	private void hangul$onPreedit(
@@ -63,55 +61,43 @@ public abstract class AbstractSignEditScreenMixin {
 		hangul$clearPreedit();
 	}
 
-	@Inject(method = "extractRenderState", at = @At("HEAD"))
-	private void hangul$injectInlinePreedit(
+	@WrapMethod(method = "extractRenderState")
+	private void hangul$renderInlinePreedit(
 		final GuiGraphicsExtractor graphics,
 		final int mouseX,
 		final int mouseY,
 		final float partialTick,
-		final CallbackInfo callback
+		final Operation<Void> original
 	) {
 		if (hangul$preedit != null && line != hangul$preeditLine) {
 			hangul$clearPreedit();
 		}
 		if (hangul$preedit == null || !hangul$hasValidRange()) {
+			original.call(graphics, mouseX, mouseY, partialTick);
 			return;
 		}
 
-		InlinePreedit.Visual visual = InlinePreedit.merge(
+		InlinePreedit.Visual visual = hangul$visualCache.get(
 			messages[line],
 			hangul$preeditStart,
 			hangul$preeditEnd,
 			hangul$preedit.fullText(),
 			hangul$preedit.caretPosition()
 		);
-		hangul$savedLine = line;
-		hangul$savedMessage = messages[line];
-		hangul$savedCursor = signField.getCursorPos();
-		hangul$savedSelection = signField.getSelectionPos();
-		messages[line] = visual.value();
-		signField.setCursorPos(visual.cursor(), false);
-		signField.setSelectionPos(visual.cursor());
-		hangul$renderInjected = true;
-	}
-
-	@Inject(method = "extractRenderState", at = @At("RETURN"))
-	private void hangul$restoreAfterInlinePreedit(
-		final GuiGraphicsExtractor graphics,
-		final int mouseX,
-		final int mouseY,
-		final float partialTick,
-		final CallbackInfo callback
-	) {
-		if (!hangul$renderInjected) {
-			return;
+		int savedLine = line;
+		String savedMessage = messages[line];
+		int savedCursor = signField.getCursorPos();
+		int savedSelection = signField.getSelectionPos();
+		try {
+			messages[line] = visual.value();
+			signField.setCursorPos(visual.cursor(), false);
+			signField.setSelectionPos(visual.cursor());
+			original.call(graphics, mouseX, mouseY, partialTick);
+		} finally {
+			messages[savedLine] = savedMessage;
+			signField.setCursorPos(savedCursor, false);
+			signField.setSelectionPos(savedSelection);
 		}
-
-		messages[hangul$savedLine] = hangul$savedMessage;
-		signField.setCursorPos(hangul$savedCursor, false);
-		signField.setSelectionPos(hangul$savedSelection);
-		hangul$savedMessage = null;
-		hangul$renderInjected = false;
 	}
 
 	@Redirect(
@@ -144,6 +130,7 @@ public abstract class AbstractSignEditScreenMixin {
 
 	@Unique
 	private void hangul$clearPreedit() {
+		hangul$visualCache.clear();
 		hangul$preedit = null;
 		hangul$preeditStart = 0;
 		hangul$preeditEnd = 0;

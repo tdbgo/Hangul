@@ -2,7 +2,7 @@
 
 ![Hangul icon](src/main/resources/assets/hangul/icon.png)
 
-Minecraft Java Edition 26.1–26.2와 26.3 Snapshot 1–8용 경량 Fabric 한글 입력 패치입니다. 입력 모드를 별도로 관리하게 만들기보다, 평소 Windows 입력 방식이 게임 안에서도 자연스럽게 이어지도록 설계했습니다.
+Minecraft Java Edition 26.1–26.2와 26.3 Snapshot 1–10·Pre-release 1–2용 경량 Fabric 한글 입력 패치입니다. 입력 모드를 별도로 관리하게 만들기보다, 평소 Windows 입력 방식이 게임 안에서도 자연스럽게 이어지도록 설계했습니다. 시험판의 검증 범위와 남은 수동 검사는 [호환성 문서](docs/COMPATIBILITY.md)를 참고해 주세요.
 
 Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecraft chat, books, signs, commands, items, recipes, and Hanja conversion.
 
@@ -18,7 +18,7 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 2. 채팅, 책, 표지판, 명령어 블록 등 원하는 입력창에 입력합니다.
 3. 조합 중인 글자가 커서 위치에 즉시 표시되고, 확정되면 정상 입력값으로 들어갑니다.
 
-`F6`은 OS IME가 고장 난 환경에서 단일행 입력창에만 쓰는 비상용 **강제 한글 모드**입니다. 다시 `F6`을 누르면 기본 **자동 입력 [IME]** 모드로 돌아갑니다. 오른쪽 Alt/한영키는 모드가 가로채지 않습니다.
+`F6`은 OS IME가 고장 난 환경에서 단일행 입력창에만 쓰는 비상용 **강제 한글 모드**입니다. 현재 입력창에서만 적용되며, 다시 `F6`을 누르거나 다른 곳으로 포커스를 옮기거나 화면을 닫으면 **자동 입력 [IME]** 모드로 돌아갑니다. 책과 표지판은 기본 OS IME 경로를 사용하고 F6 전환은 지원하지 않습니다. 오른쪽 Alt/한영키는 모드가 가로채지 않습니다.
 
 ## 입력 구조
 
@@ -39,7 +39,7 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 - 한글 상태로 영문 명령어의 물리 키를 누른 경우와 `디버그` 같은 음차 명령의 Tab 추천 복구
 - F6 강제 모드에서는 독립 두벌식 조합기 사용
 - Fabric API, Mod Menu, 네이티브 라이브러리 불필요
-- Minecraft 26.1–26.2 및 26.3 Snapshot 1–8 / Fabric Loader 0.19.3 이상 / Java 25 이상
+- Minecraft 26.1–26.2 및 26.3 Snapshot 1–10·Pre-release 1–2 / Fabric Loader 0.19.3 이상(0.19.5 권장) / Java 25 이상
 
 ## Hangul의 강점
 
@@ -76,7 +76,7 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 ```
 
-빌드는 Java 25를 선택한 뒤 클린 빌드, 리맵, 두벌식 조합, 초성·자판 변환, 명령어 복구 및 인라인 preedit 회귀 테스트를 수행합니다.
+빌드는 Java 25를 선택한 뒤 클린 빌드, 두벌식 조합·검색·명령어 복구 회귀 테스트, 배포 JAR의 바이너리 호환 검사와 실제 Mixin 적용 검사를 수행합니다. 화면을 띄우지 않는 위젯 검사도 포함되지만, Windows IME의 한자 후보창이나 전체화면 동작을 대신 확인하지는 않습니다.
 
 구조와 성능 경계는 [아키텍처 문서](docs/ARCHITECTURE.md), 버전별 검증 범위는 [호환성 문서](docs/COMPATIBILITY.md), 기여 코드·자산의 출처 기준은 [기여 안내](CONTRIBUTING.md), 포함된 이미지의 출처는 [자산 출처 문서](docs/ASSET_PROVENANCE.md), 보안 신고는 [보안 정책](SECURITY.md), 공개 전 검사는 [릴리스 체크리스트](docs/RELEASE_CHECKLIST.md)에 정리되어 있습니다.
 

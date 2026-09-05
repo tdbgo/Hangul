@@ -32,7 +32,94 @@ loom {
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	// Keep annotation bytecode compatible with the minimum supported Loader.
+	compileOnly "net.fabricmc:fabric-loader:${project.loader_api_version}"
+	runtimeOnly "net.fabricmc:fabric-loader:${project.loader_version}"
+}
+
+// Loom derives compiler libraries from the minimum Loader API. Resolve the
+// selected runtime's own installer metadata as well, so tests never accidentally
+// run a new Loader with the old compiler's Mixin/MixinExtras implementations.
+configurations {
+	loaderRuntimeMetadata {
+		canBeConsumed = false
+		transitive = false
+	}
+}
+dependencies {
+	loaderRuntimeMetadata "net.fabricmc:fabric-loader:${project.loader_version}"
+}
+def loaderInstaller = zipTree(configurations.loaderRuntimeMetadata.singleFile)
+	.matching { include 'fabric-installer.json' }.singleFile
+def loaderLibraries = new groovy.json.JsonSlurper().parse(loaderInstaller).libraries
+dependencies {
+	(loaderLibraries.common + loaderLibraries.development).each { library ->
+		runtimeOnly library.name
+	}
+}
+
+// Verification tools are separate from the shipped mod and its source archive.
+sourceSets {
+	verification {
+		compileClasspath += sourceSets.client.compileClasspath
+		runtimeClasspath += sourceSets.client.runtimeClasspath - sourceSets.main.output - sourceSets.client.output
+	}
+}
+
+dependencies {
+	verificationImplementation 'org.ow2.asm:asm-tree:9.10.1'
+}
+
+def compatibilityJar = providers.gradleProperty('compatibilityJar')
+	.map { file(it) }.orElse(tasks.named('jar').flatMap { it.archiveFile }.map { it.asFile })
+
+tasks.register('verifyBinaryCompatibility', JavaExec) {
+	group = 'verification'
+	description = 'Checks the exact candidate JAR against Minecraft descriptors and Mixin targets.'
+	dependsOn verificationClasses
+	if (!providers.gradleProperty('compatibilityJar').isPresent()) {
+		dependsOn jar
+	}
+	classpath = sourceSets.verification.runtimeClasspath
+	mainClass = 'kr.playcity.hangul.verification.BinaryCompatibilityCheck'
+	doFirst {
+		args compatibilityJar.get().absolutePath, loom.minecraftProvider.minecraftClientJar.absolutePath
+	}
+}
+
+tasks.register('verificationJar', Jar) {
+	archiveClassifier = 'verification'
+	from sourceSets.verification.output
+	destinationDirectory = layout.buildDirectory.dir('verification')
+}
+
+tasks.register('stageCompatibilityJar', Copy) {
+	dependsOn build
+	from(tasks.named('jar').flatMap { it.archiveFile })
+	into layout.buildDirectory.dir('compatibility')
+	rename { 'hangul.jar' }
+}
+
+tasks.register('verifyMixinApplication', JavaExec) {
+	group = 'verification'
+	description = 'Applies every candidate Mixin through Fabric Loader without starting a game window.'
+	dependsOn verificationJar, verifyBinaryCompatibility
+	classpath = (sourceSets.verification.runtimeClasspath - sourceSets.verification.output)
+	mainClass = 'net.fabricmc.loader.impl.launch.knot.KnotClient'
+	systemProperty 'fabric.development', 'true'
+	systemProperty 'fabric.side', 'client'
+	systemProperty 'fabric.noGui', 'true'
+	systemProperty 'fabric.debug.throwDirectly', 'true'
+	systemProperty 'mixin.debug.countInjections', 'true'
+	systemProperty 'java.awt.headless', 'true'
+	def runPath = layout.buildDirectory.dir("verification/run-${project.minecraft_version}")
+	def fixtureJar = tasks.named('verificationJar').flatMap { it.archiveFile }
+	doFirst {
+		def runDirectory = runPath.get().asFile
+		runDirectory.mkdirs()
+		workingDir runDirectory
+		systemProperty 'fabric.addMods', compatibilityJar.get().absolutePath + File.pathSeparator + fixtureJar.get().asFile.absolutePath
+	}
 }
 
 processResources {
@@ -70,7 +157,7 @@ test {
 	failOnNoDiscoveredTests = false
 }
 
-check.dependsOn verifyHangulComposer
+check.dependsOn verifyHangulComposer, verifyMixinApplication
 
 jar {
 	def projectName = project.name

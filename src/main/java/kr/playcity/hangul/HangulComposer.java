@@ -41,6 +41,9 @@ public final class HangulComposer {
 	 * @return an edit, or {@code null} when the character is not a layout key
 	 */
 	public Edit inputDubeolsik(final int codePoint, final boolean shifted) {
+		if (!(codePoint >= 'A' && codePoint <= 'Z' || codePoint >= 'a' && codePoint <= 'z')) {
+			return null;
+		}
 		char key = Character.toLowerCase((char)codePoint);
 		return switch (key) {
 			case 'r' -> this.inputConsonant(shifted ? 1 : 0);

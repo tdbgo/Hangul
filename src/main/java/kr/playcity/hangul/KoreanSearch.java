@@ -200,7 +200,7 @@ public final class KoreanSearch {
 
 	/** Searches the vanilla index first, then layout and multi-token fallbacks. */
 	public static <T> List<T> search(final Function<String, List<T>> vanillaSearch, final String rawQuery) {
-		String query = normalize(rawQuery == null ? "" : rawQuery).toLowerCase(Locale.ROOT);
+		String query = normalize(rawQuery == null ? "" : rawQuery);
 		List<T> matches = searchTerm(vanillaSearch, query);
 		if (!matches.isEmpty()) {
 			return matches;
@@ -245,7 +245,8 @@ public final class KoreanSearch {
 		final Function<String, List<T>> vanillaSearch,
 		final String query
 	) {
-		List<T> primary = vanillaSearch.apply(query);
+		// Case is part of a Dubeolsik key: R and r produce different consonants.
+		List<T> primary = vanillaSearch.apply(query.toLowerCase(Locale.ROOT));
 		if (!containsLatinLetter(query)) {
 			return primary;
 		}

@@ -14,6 +14,7 @@ public final class HangulComposerTest {
 	}
 
 	public static void main(final String[] args) {
+		InputRegressionTest.run();
 		expect("안녕하세요", type("dkssudgktpdy"), "greeting");
 		expect("한글", type("gksrmf"), "word");
 		expect("닭", type("ekfr"), "compound final");
