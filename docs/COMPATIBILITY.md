@@ -2,9 +2,9 @@
 
 Hangul shares its input and search sources across loaders. The Fabric JAR also runs on Quilt; NeoForge and Forge have separate JARs. No separate API mod, compatibility bridge or native library is required. Stable 26.2 remains the compilation target. The compatibility gate checks each exact platform JAR on the declared loader/version combinations.
 
-## Multiloader candidate: 1.3.0-beta.6
+## Multiloader beta: 1.3.0-beta.6
 
-This is an unreleased candidate. The public beta.5 file remains Fabric-only; adding new build targets does not change that release.
+Version beta.6 provides Fabric/Quilt, NeoForge and Forge files. The older beta.5 file remains Fabric-only; support is not applied retroactively.
 
 | Platform | Candidate game versions | Loader versions selected for verification |
 | --- | --- | --- |
@@ -31,7 +31,9 @@ That native NeoForge run showed a deprecated `logoFile` metadata warning. The ca
 
 Quilt/26.2 was tested in its isolated local world with the packaged candidate: immediate native composition, final-consonant deletion, one chat submission, sign selection replacement and Enter navigation with save, and fullscreen/windowed transitions. Additional book saving and native Down-key delivery were not established by the recorded observations.
 
-On 2026-09-06, the tester reported that all remaining checks were complete, closing the manual test request. No additional per-version, per-loader or artifact-hash execution records accompanied that confirmation. It is recorded as tester-reported completion, not as an independently observed run of every combination or of the updated NeoForge hash. Automated preedit/Hanja character events remain distinct from OS candidate-window verification, and 26.3 remains experimental. Remote CI and publication checks are still upload gates; see the [release readiness record](RELEASE_READINESS.md).
+On 2026-09-06, the tester reported that all remaining checks were complete, closing the manual test request. No additional per-version, per-loader or artifact-hash execution records accompanied that confirmation. It is recorded as tester-reported completion, not as an independently observed run of every combination or of the updated NeoForge hash. Automated preedit/Hanja character events remain distinct from OS candidate-window verification, and 26.3 remains experimental. See the [release readiness record](RELEASE_READINESS.md).
+
+The [beta.6 CI run](https://github.com/tdbgo/Hangul/actions/runs/34021385715) passed all 26 jobs on commit `1822826`, including both platform matrices and the final packaging gate. Release documentation changes do not alter those sources or build settings. CI artifacts have identical class bytes to the locally tested files; archive hashes differ only because of text line endings and the order of Fabric's client-only manifest list. The local, native-tested files remain the release candidates.
 
 Build all artifacts and check the full matrix with Java 25 and Python 3.11+:
 

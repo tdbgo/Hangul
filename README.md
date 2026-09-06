@@ -2,7 +2,7 @@
 
 ![Hangul icon](src/main/resources/assets/hangul/icon.png)
 
-Minecraft Java Edition의 한글 입력을 다듬는 가벼운 클라이언트 모드입니다. 입력 모드를 별도로 관리하게 만들기보다, 평소 Windows 입력 방식이 게임 안에서도 자연스럽게 이어지도록 설계했습니다. 로더별 지원 버전과 남은 수동 검사는 [호환성 문서](docs/COMPATIBILITY.md)를 참고해 주세요.
+Minecraft Java Edition의 한글 입력을 다듬는 가벼운 클라이언트 모드입니다. 입력 모드를 별도로 관리하게 만들기보다, 평소 Windows 입력 방식이 게임 안에서도 자연스럽게 이어지도록 설계했습니다. 로더별 지원 버전과 검증 범위는 [호환성 문서](docs/COMPATIBILITY.md)를 참고해 주세요.
 
 Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecraft chat, books, signs, commands, items, recipes, and Hanja conversion.
 

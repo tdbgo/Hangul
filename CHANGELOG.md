@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.3.0-beta.6 (unreleased)
+## 1.3.0-beta.6 (2026-09-06)
 
 - Fabric JAR의 Quilt 호환 검사와 NeoForge·Forge 전용 빌드 추가
 - 로더별로 같은 한글 입력·검색 코드를 사용하며 추가 필수 모드나 네이티브 라이브러리 없이 동작
