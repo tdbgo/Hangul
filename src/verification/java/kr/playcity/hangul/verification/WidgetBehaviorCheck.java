@@ -13,6 +13,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.searchtree.SearchTree;
 import net.minecraft.client.input.PreeditEvent;
+import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 
@@ -22,8 +23,10 @@ final class WidgetBehaviorCheck {
 		CountingFont font = new CountingFont();
 		checkSearchTree();
 		checkSingleLine(font);
+		checkInputLifecycle(font);
 		checkMultiline(font);
-		System.out.println("WIDGET_BEHAVIOR_OK search, render restoration, and multiline layout reuse");
+		SignBehaviorCheck.run();
+		System.out.println("WIDGET_BEHAVIOR_OK search, input lifecycle, render restoration, multiline layout reuse, and sign navigation");
 	}
 
 	private static void checkSearchTree() throws Exception {
@@ -94,6 +97,46 @@ final class WidgetBehaviorCheck {
 		check(layoutLines(box) == null, "cancellation releases cached text layout");
 	}
 
+	private static void checkInputLifecycle(final CountingFont font) throws Exception {
+		EditBox box = new EditBox(font, 120, 20, Component.empty());
+		setField(box, "focused", true);
+		box.setValue("앞뒤");
+		box.moveCursorTo(1, false);
+		Method visual = box.getClass().getMethod("hangul$getVisualValue");
+		for (String composition : List.of("ㄱ", "가", "각", "가", "漢")) {
+			box.preeditUpdated(preedit(composition, 1));
+			check(visual.invoke(box).equals("앞" + composition + "뒤"), "immediate middle preedit " + composition);
+			check(box.getValue().equals("앞뒤"), "preedit does not commit text");
+		}
+		box.preeditUpdated(null);
+		check(visual.invoke(box).equals("앞뒤"), "conversion cancellation restores body");
+		box.moveCursorTo(0, false);
+		box.moveCursorTo(2, true);
+		box.preeditUpdated(preedit("한", 1));
+		check(visual.invoke(box).equals("한"), "preedit replaces selection visually");
+		box.charTyped(new CharacterEvent('한'));
+		box.preeditUpdated(null);
+		check(box.getValue().equals("한") && visual.invoke(box).equals("한"), "character commits selection exactly once");
+		box.preeditUpdated(preedit("글", 1));
+		// Exercise the installed focus-loss hook without Minecraft's native focus callback.
+		Method focus = Arrays.stream(EditBox.class.getDeclaredMethods())
+			.filter(method -> method.getName().contains("hangul$onFocusChanged")).findFirst().orElseThrow();
+		focus.setAccessible(true);
+		focus.invoke(box, false, new org.spongepowered.asm.mixin.injection.callback.CallbackInfo("setFocused", false));
+		setField(box, "focused", false);
+		check(visual.invoke(box).equals("한"), "focus loss clears preedit");
+		setField(box, "focused", true);
+		box.preeditUpdated(preedit("ㄱ", 1));
+		box.setValue("replacement");
+		check(visual.invoke(box).equals("replacement"), "external value replacement clears preedit");
+		box.setMaxLength(1);
+		box.setValue("가");
+		box.moveCursorTo(1, false);
+		box.preeditUpdated(preedit("나", 1));
+		box.charTyped(new CharacterEvent('나'));
+		check(box.getValue().equals("가") && visual.invoke(box).equals("가"), "length rejection does not leave a ghost preedit");
+	}
+
 	private static Object layoutLines(final MultiLineEditBox box) throws Exception {
 		return field(field(box, "hangul$layoutCache"), "layout");
 	}
@@ -133,9 +176,17 @@ final class WidgetBehaviorCheck {
 	}
 
 	private static void setField(final Object owner, final String name, final Object value) throws Exception {
-		Field field = owner.getClass().getDeclaredField(name);
-		field.setAccessible(true);
-		field.set(owner, value);
+		for (Class<?> type = owner.getClass(); type != null; type = type.getSuperclass()) {
+			try {
+				Field field = type.getDeclaredField(name);
+				field.setAccessible(true);
+				field.set(owner, value);
+				return;
+			} catch (NoSuchFieldException absent) {
+				// Continue through widget base classes.
+			}
+		}
+		throw new NoSuchFieldException(name);
 	}
 
 	private static void check(final boolean condition, final String label) {
@@ -171,6 +222,12 @@ final class WidgetBehaviorCheck {
 		@Override
 		public String plainSubstrByWidth(final String value, final int width) {
 			return value.substring(0, Math.min(value.length(), Math.max(0, width / 6)));
+		}
+
+		@Override
+		public String plainSubstrByWidth(final String value, final int width, final boolean fromEnd) {
+			int count = Math.min(value.length(), Math.max(0, width / 6));
+			return fromEnd ? value.substring(value.length() - count) : value.substring(0, count);
 		}
 	}
 }

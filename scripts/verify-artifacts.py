@@ -56,6 +56,8 @@ def verify(path: Path, loader: str) -> tuple[set[str], str]:
                 assert b"MixinConfigs: hangul.client.mixins.json" in archive.read("META-INF/MANIFEST.MF")
             else:
                 assert mod["mixins"][0]["config"] == "hangul.client.mixins.json"
+                assert "logoFile" not in mod and all("logoFile" not in item for item in mod["mods"]), "Deprecated NeoForge logoFile"
+                assert mod["mods"][0]["iconFile"] == "assets/hangul/icon.png"
         classes = {name for name in names if name.endswith(".class")}
         assert classes and all(name.startswith("kr/playcity/hangul/") for name in classes)
         for name in classes:

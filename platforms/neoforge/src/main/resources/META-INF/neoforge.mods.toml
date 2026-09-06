@@ -9,7 +9,7 @@ version="${version}"
 displayName="Hangul"
 authors="PLAYCITY"
 displayURL="https://modrinth.com/mod/hangul"
-logoFile="assets/hangul/icon.png"
+iconFile="assets/hangul/icon.png"
 description='''Native Korean input and Korean-aware item, recipe, and command search.'''
 
 [[mixins]]

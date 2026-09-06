@@ -10,6 +10,13 @@ try {
 	}
 	Invoke-CheckedGradle -Arguments @('clean', 'stageCompatibilityJar', 'verifyQuiltApplication')
 	$candidates = Join-Path $PSScriptRoot 'build/compatibility'
+	$fabricCandidate = Join-Path $candidates 'hangul.jar'
+	$fabricHash = (Get-FileHash -LiteralPath $fabricCandidate -Algorithm SHA256).Hash
+	function Assert-FabricCandidate {
+		if ((Get-FileHash -LiteralPath $fabricCandidate -Algorithm SHA256).Hash -ne $fabricHash) {
+			throw 'Fabric/Quilt candidate changed during verification'
+		}
+	}
 	$matrix = Get-Content -Raw platform-matrix.json | ConvertFrom-Json
 	foreach ($platform in @('neoforge', 'forge')) {
 		Invoke-CheckedGradle -Arguments @("-Pplatform=$platform", ":${platform}:clean", ":${platform}:build")
@@ -33,6 +40,13 @@ try {
 		$metadata = Get-Content -Raw src/main/resources/fabric.mod.json | ConvertFrom-Json
 		foreach ($target in $metadata.custom.'hangul:tested_game_versions') {
 			Invoke-CheckedGradle -Arguments @('verifyMixinApplication', 'verifyQuiltApplication', "-Pminecraft_version=$target", "-PcompatibilityJar=$candidates/hangul.jar")
+			Assert-FabricCandidate
+		}
+		$minimumLoader = (Select-String -Path gradle.properties -Pattern '^loader_api_version=(.+)$').Matches.Groups[1].Value
+		if (!$minimumLoader) { throw 'Missing minimum Fabric Loader version' }
+		foreach ($target in @('26.1', '26.2', '26.3-pre-2')) {
+			Invoke-CheckedGradle -Arguments @('verifyMixinApplication', "-Pminecraft_version=$target", "-Ploader_version=$minimumLoader", "-PcompatibilityJar=$fabricCandidate")
+			Assert-FabricCandidate
 		}
 	}
 	& python scripts/verify-artifacts.py "$candidates/hangul.jar" "$candidates/hangul-neoforge.jar" "$candidates/hangul-forge.jar"

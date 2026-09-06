@@ -25,7 +25,13 @@ The initial Forge candidate's missing `pack.mcmeta` triggered a loading warning 
 
 On 2026-09-06, the corrected Forge/26.2 artifact was also tested interactively on Windows: warning-free startup, the previously failing block-drop command, native chat composition and one Enter submission, two-line book input with save/reopen, sign composition and save, fullscreen/windowed transition, and composition/cancel after F3+T resource reload. The isolated world saved and the client exited normally. No F6 fallback or pasted Korean was used for those composition checks.
 
-**Native verification is partial, not a blanket release approval.** Hanja candidates, extended selection/page-navigation cases and the other Forge game versions still need interactive checks. NeoForge and Quilt native Windows IME checks remain pending. Automated preedit events and the beta.5 Fabric results below must not be presented as native verification of those variants.
+NeoForge/26.2 was also tested interactively on Windows on 2026-09-06: immediate native composition and Backspace, one chat submission, sign input/save, book selection replacement and two-page save/reopen, fullscreen transitions during composition, block drops, resource reload, and normal world save/exit. Hanja conversion was confirmed by the tester. Sign arrow delivery was inconclusive in that native session; Enter line navigation worked. A later headless regression checks the transformed sign's Up/Down/Enter handlers directly, including line wrap and stale-composition cleanup; this does not establish OS key delivery while the IME is active.
+
+That native NeoForge run showed a deprecated `logoFile` metadata warning. The candidate now uses `iconFile`, following the [NeoForge mod-list migration](https://github.com/neoforged/Documentation/issues/372), with a packaging gate rejecting `logoFile`. This is a metadata-only change; the icon may not be shown by older 26.1 mod-list screens that predate `iconFile`. Input classes are unchanged. The rebuilt candidate passed all four declared NeoForge loader checks; the earlier native result must not be described as a native run of the new hash.
+
+Quilt/26.2 reached its isolated local world with the packaged candidate. Native Korean composition was not completed. Headless tests exercise the exact JAR through Quilt, but do not replace that missing native check.
+
+**Native verification is partial, not a blanket release approval.** Remaining interactive checks include Quilt native composition, IME candidate cancellation and positioning across display changes, the full focus/scaling checklist, and the latest experimental target. Automated preedit/Hanja character events are not OS candidate-window verification. See the [release readiness record](RELEASE_READINESS.md) for the distinction between completed checks and upload gates.
 
 Build all artifacts and check the full matrix with Java 25 and Python 3.11+:
 
