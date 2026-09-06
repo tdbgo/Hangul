@@ -1,0 +1,8 @@
+{
+	"required": true,
+	"minVersion": "0.8.7",
+	"package": "kr.playcity.hangul.verification.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": ["ForgeVerification"],
+	"injectors": {"defaultRequire": 1}
+}

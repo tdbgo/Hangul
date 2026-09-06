@@ -1,0 +1,81 @@
+plugins {
+	id 'java-library'
+	id 'net.minecraftforge.gradle' version '7.0.23'
+}
+apply from: rootProject.file('gradle/platform-common.gradle')
+apply from: rootProject.file('gradle/verification-launch.gradle')
+def candidate = providers.gradleProperty('compatibilityJar').map { file(it) }
+	.getOrElse(tasks.jar.archiveFile.get().asFile)
+repositories {
+	minecraft.mavenizer(it)
+	maven fg.forgeMaven
+	maven fg.minecraftLibsMaven
+	mavenCentral()
+}
+configurations {
+	verificationImplementation.extendsFrom implementation
+	verificationRuntimeOnly.extendsFrom runtimeOnly
+}
+dependencies {
+	implementation minecraft.dependency("net.minecraftforge:forge:${forge_version}")
+}
+sourceSets.verification.runtimeClasspath = configurations.verificationRuntimeClasspath
+sourceSets.main.runtimeClasspath = configurations.runtimeClasspath
+tasks.register('verificationJar', Jar) {
+	from sourceSets.verification.output
+	archiveClassifier = 'verification'
+	destinationDirectory = layout.buildDirectory.dir('verification')
+	manifest { attributes 'MixinConfigs': 'hangul.verification.mixins.json' }
+}
+tasks.register('stageVerificationMods', Sync) {
+	if (!providers.gradleProperty('compatibilityJar').isPresent()) { dependsOn jar }
+	from candidate
+	from tasks.named('verificationJar')
+	into layout.buildDirectory.dir('run-verification/mods')
+}
+tasks.register('stageClientMod', Copy) {
+	from tasks.jar
+	rename { 'hangul.jar' }
+	into layout.buildDirectory.dir('run-client/mods')
+}
+minecraft {
+	runs {
+		register('client') {
+			workingDir = layout.buildDirectory.dir('run-client')
+			with(sourceSets.verification) {
+				workingDir = layout.buildDirectory.dir('run-verification')
+				systemProperty 'java.awt.headless', 'true'
+				systemProperty 'mixin.debug.countInjections', 'true'
+				systemProperty 'hangul.verification.jar', candidate.absolutePath
+			}
+		}
+	}
+}
+jar { manifest { attributes 'MixinConfigs': 'hangul.client.mixins.json' } }
+// Forge's upstream Mixin 0.8.7 recognizes JAVA_21, not JAVA_25. The shared
+// code uses Java 21 language features; Minecraft still requires a Java 25 VM.
+tasks.withType(JavaCompile).configureEach { options.release = 21 }
+configurations.configureEach {
+	if (canBeResolved) {
+		attributes.attribute(org.gradle.api.attributes.java.TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 25)
+	}
+}
+processResources {
+	exclude 'hangul.client.mixins.json'
+}
+tasks.register('prepareForgeMixinConfig', Copy) {
+	inputs.property 'compatibilityLevel', 'JAVA_21'
+	inputs.property 'minVersion', '0.8.7'
+	from(rootProject.file('src/client/resources/hangul.client.mixins.json')) {
+		filter { line -> line.replace('JAVA_25', 'JAVA_21').replace('"required": true,', '"required": true, "minVersion": "0.8.7",') }
+	}
+	into layout.buildDirectory.dir('forge-mixin')
+}
+jar { from(tasks.named('prepareForgeMixinConfig')) }
+tasks.matching { it.name == 'runVerificationClient' }.configureEach {
+	if (!providers.gradleProperty('compatibilityJar').isPresent()) { dependsOn jar }
+	dependsOn 'stageVerificationMods'
+	configureVerificationLaunch(it)
+}
+tasks.named('check') { dependsOn 'runVerificationClient' }
+tasks.matching { it.name == 'runClient' }.configureEach { dependsOn 'stageClientMod' }

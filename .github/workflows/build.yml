@@ -71,3 +71,52 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew verifyMixinApplication --no-daemon -PcompatibilityJar=candidate/hangul.jar -Pminecraft_version=${{ matrix.minecraft }} -Ploader_version=${{ matrix.loader }}
+          if [ "${{ matrix.loader }}" = "0.19.5" ]; then
+            ./gradlew verifyQuiltApplication --no-daemon -PcompatibilityJar=candidate/hangul.jar -Pminecraft_version=${{ matrix.minecraft }}
+          fi
+
+  platform-build:
+    runs-on: windows-2025
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [neoforge, forge]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'microsoft'
+      - name: Build and verify platform candidate
+        shell: pwsh
+        run: ./gradlew.bat -Pplatform=${{ matrix.platform }} :${{ matrix.platform }}:clean :${{ matrix.platform }}:build --no-daemon
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-${{ matrix.platform }}
+          path: platforms/${{ matrix.platform }}/build/libs/
+          if-no-files-found: error
+      - name: Verify same candidate against declared loader versions
+        shell: pwsh
+        run: |
+          $platform = '${{ matrix.platform }}'
+          $targets = (Get-Content platform-matrix.json -Raw | ConvertFrom-Json).$platform
+          $candidate = (Get-ChildItem "platforms/$platform/build/libs/*-$platform.jar").FullName
+          $hash = (Get-FileHash $candidate).Hash
+          $property = if ($platform -eq 'neoforge') { 'neo_version' } else { 'forge_version' }
+          $task = if ($platform -eq 'neoforge') { 'runVerification' } else { 'runVerificationClient' }
+          foreach ($target in $targets) {
+            & ./gradlew.bat "-Pplatform=$platform" ":${platform}:$task" "-P${property}=$($target.loader)" "-PcompatibilityJar=$candidate" --no-daemon
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            if ((Get-FileHash $candidate).Hash -ne $hash) { throw 'Candidate changed' }
+          }
+
+  artifact-gate:
+    needs: [build, platform-build]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: release-*
+      - name: Check platform packaging and shared classes
+        run: python3 scripts/verify-artifacts.py release-artifacts/*-fabric.jar release-neoforge/*-neoforge.jar release-forge/*-forge.jar

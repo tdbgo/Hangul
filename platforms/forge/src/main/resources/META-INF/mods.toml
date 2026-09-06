@@ -1,0 +1,26 @@
+modLoader="lowcodefml"
+loaderVersion="[62,)"
+license="MIT"
+clientSideOnly=true
+issueTrackerURL="https://github.com/tdbgo/Hangul/issues"
+
+[[mods]]
+modId="hangul"
+version="${version}"
+displayName="Hangul"
+authors="PLAYCITY"
+displayURL="https://modrinth.com/mod/hangul"
+logoFile="assets/hangul/icon.png"
+description='''Native Korean input and Korean-aware item, recipe, and command search.'''
+
+[[dependencies.hangul]]
+modId="forge"
+mandatory=true
+versionRange="[62.0.9],[63.0.2],[64.1.3],[65.1.3]"
+side="CLIENT"
+
+[[dependencies.hangul]]
+modId="minecraft"
+mandatory=true
+versionRange="[26.1],[26.1.1],[26.1.2],[26.2]"
+side="CLIENT"

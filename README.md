@@ -2,7 +2,7 @@
 
 ![Hangul icon](src/main/resources/assets/hangul/icon.png)
 
-Minecraft Java Edition 26.1–26.2와 26.3 Snapshot 1–10·Pre-release 1–2용 경량 Fabric 한글 입력 패치입니다. 입력 모드를 별도로 관리하게 만들기보다, 평소 Windows 입력 방식이 게임 안에서도 자연스럽게 이어지도록 설계했습니다. 시험판의 검증 범위와 남은 수동 검사는 [호환성 문서](docs/COMPATIBILITY.md)를 참고해 주세요.
+Minecraft Java Edition의 한글 입력을 다듬는 가벼운 클라이언트 모드입니다. 입력 모드를 별도로 관리하게 만들기보다, 평소 Windows 입력 방식이 게임 안에서도 자연스럽게 이어지도록 설계했습니다. 로더별 지원 버전과 남은 수동 검사는 [호환성 문서](docs/COMPATIBILITY.md)를 참고해 주세요.
 
 Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecraft chat, books, signs, commands, items, recipes, and Hanja conversion.
 
@@ -39,7 +39,7 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 - 한글 상태로 영문 명령어의 물리 키를 누른 경우와 `디버그` 같은 음차 명령의 Tab 추천 복구
 - F6 강제 모드에서는 독립 두벌식 조합기 사용
 - Fabric API, Mod Menu, 네이티브 라이브러리 불필요
-- Minecraft 26.1–26.2 및 26.3 Snapshot 1–10·Pre-release 1–2 / Fabric Loader 0.19.3 이상(0.19.5 권장) / Java 25 이상
+- Fabric·Quilt·NeoForge·Forge용 빌드 / Java 25 이상 — 로더별 버전과 검증 수준은 [호환성 문서](docs/COMPATIBILITY.md)를 확인해 주세요.
 
 ## Hangul의 강점
 
@@ -76,9 +76,11 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 
 ## 설치
 
-1. 사용 중인 Minecraft 버전에 맞는 Fabric Loader 0.19.3 이상을 설치합니다.
-2. [Modrinth](https://modrinth.com/mod/hangul)에서 최신 JAR을 내려받아 Minecraft의 `mods` 폴더에 넣습니다.
+1. 사용 중인 Minecraft 버전에 맞는 로더를 설치합니다. Fabric·Quilt·NeoForge·Forge 중 하나만 선택합니다.
+2. [Modrinth](https://modrinth.com/mod/hangul)에서 **현재 공개된 파일의 지원 로더**를 확인하고 Minecraft의 `mods` 폴더에 넣습니다. 개발 중인 빌드의 지원 범위가 기존 공개 파일에 소급 적용되지는 않습니다.
 3. 게임을 실행하면 자동 IME 모드로 시작합니다.
+
+멀티로더 빌드에서 `-fabric.jar`는 Fabric·Quilt 공용이며, `-neoforge.jar`와 `-forge.jar`는 각각 해당 로더 전용입니다. 여러 파일을 동시에 넣지 마세요. 서버에는 설치하지 않습니다. 별도 Fabric API나 호환 브리지 모드는 필요하지 않습니다.
 
 ## 빌드
 
@@ -87,6 +89,14 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 ```
 
 빌드는 Java 25를 선택한 뒤 클린 빌드, 두벌식 조합·검색·명령어 복구 회귀 테스트, 배포 JAR의 바이너리 호환 검사와 실제 Mixin 적용 검사를 수행합니다. 화면을 띄우지 않는 위젯 검사도 포함되지만, Windows IME의 한자 후보창이나 전체화면 동작을 대신 확인하지는 않습니다.
+
+모든 로더의 JAR을 빌드하고 검사하려면 Java 25와 Python 3.11 이상을 준비한 뒤 실행합니다.
+
+```powershell
+.\verify-multiloader.ps1 -FullMatrix
+```
+
+`-FullMatrix`를 생략하면 기본 대상인 26.2에서 네 로더를 검사합니다. 입력 로직은 공통 소스를 사용하며, 빌드 도구와 검사 코드는 배포 JAR에 포함되지 않습니다.
 
 구조와 성능 경계는 [아키텍처 문서](docs/ARCHITECTURE.md), 버전별 검증 범위는 [호환성 문서](docs/COMPATIBILITY.md), 기여 코드·자산의 출처 기준은 [기여 안내](CONTRIBUTING.md), 포함된 이미지의 출처는 [자산 출처 문서](docs/ASSET_PROVENANCE.md), 보안 신고는 [보안 정책](SECURITY.md), 공개 전 검사는 [릴리스 체크리스트](docs/RELEASE_CHECKLIST.md)에 정리되어 있습니다.
 

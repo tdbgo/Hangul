@@ -1,0 +1,40 @@
+plugins {
+	id 'java-library'
+	id 'net.neoforged.moddev' version '2.0.146'
+}
+apply from: rootProject.file('gradle/platform-common.gradle')
+apply from: rootProject.file('gradle/verification-launch.gradle')
+def candidate = providers.gradleProperty('compatibilityJar').map { file(it) }
+	.getOrElse(tasks.jar.archiveFile.get().asFile)
+neoForge {
+	version = project.neo_version
+	addModdingDependenciesTo sourceSets.verification
+	mods {
+		hangul { sourceSet sourceSets.main }
+		hangul_verification { sourceSet sourceSets.verification }
+	}
+	runs {
+		client {
+			client()
+			loadedMods = [mods.hangul]
+			gameDirectory = layout.buildDirectory.dir('run-client').get().asFile
+		}
+		verification {
+			client()
+			sourceSet = sourceSets.verification
+			loadedMods = [mods.hangul_verification]
+			gameDirectory = layout.buildDirectory.dir('run-verification').get().asFile
+			systemProperty 'java.awt.headless', 'true'
+			systemProperty 'mixin.debug.countInjections', 'true'
+			systemProperty 'hangul.verification.jar', candidate.absolutePath
+		}
+	}
+}
+dependencies {
+	verificationRuntimeOnly files(candidate)
+}
+tasks.named('runVerification') {
+	if (!providers.gradleProperty('compatibilityJar').isPresent()) { dependsOn jar }
+	configureVerificationLaunch(it)
+}
+tasks.named('check') { dependsOn 'runVerification' }

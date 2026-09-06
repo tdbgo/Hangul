@@ -1,0 +1,31 @@
+version = rootProject.version
+group = rootProject.group
+base { archivesName = 'hangul' }
+java {
+	toolchain.languageVersion = JavaLanguageVersion.of(25)
+	withSourcesJar()
+}
+sourceSets {
+	main {
+		java.srcDirs += [rootProject.file('src/main/java'), rootProject.file('src/client/java')]
+		resources.srcDirs += [rootProject.file('src/main/resources'), rootProject.file('src/client/resources')]
+		resources.exclude 'fabric.mod.json'
+	}
+	verification {
+		java.srcDir rootProject.file('src/verification/java')
+		java.exclude '**/BinaryCompatibilityCheck.java', '**/MixinApplicationCheck.java'
+	}
+}
+tasks.withType(JavaCompile).configureEach {
+	options.release = 25
+	options.encoding = 'UTF-8'
+}
+processResources {
+	inputs.property 'version', project.version
+	filesMatching('META-INF/*.toml') { expand version: project.version }
+}
+jar {
+	archiveClassifier = project.name
+	from(rootProject.file('LICENSE')) { rename { 'LICENSE_hangul' } }
+}
+tasks.named('sourcesJar') { archiveClassifier = "${project.name}-sources" }

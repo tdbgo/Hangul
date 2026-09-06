@@ -1,8 +1,45 @@
 # Compatibility policy
 
-Hangul keeps one client JAR for the current Minecraft 26.x line, requiring Fabric Loader but no separate Fabric API or native library. The release build targets stable 26.2. The compatibility gate checks that exact compiled JAR against every declared game version, including actual Fabric Loader resolution, Mixin transformation and headless widget tests.
+Hangul shares its input and search sources across loaders. The Fabric JAR also runs on Quilt; NeoForge and Forge have separate JARs. No separate API mod, compatibility bridge or native library is required. Stable 26.2 remains the compilation target. The compatibility gate checks each exact platform JAR on the declared loader/version combinations.
 
-## Current matrix
+## Multiloader candidate: 1.3.0-beta.6
+
+This is an unreleased candidate. The public beta.5 file remains Fabric-only; adding new build targets does not change that release.
+
+| Platform | Candidate game versions | Loader versions selected for verification |
+| --- | --- | --- |
+| Fabric | 26.1, 26.1.1, 26.1.2, 26.2; 26.3 Snapshot 1–10 and Pre-release 1–2 | 0.19.5; minimum metadata remains 0.19.3 |
+| Quilt | Same 16 game versions as Fabric | 0.31.0-beta.4 |
+| NeoForge | 26.1, 26.1.1, 26.1.2, 26.2 | 26.1.0.19-beta, 26.1.1.15-beta, 26.1.2.104, 26.2.0.77 |
+| Forge | 26.1, 26.1.1, 26.1.2, 26.2 | 62.0.9, 63.0.2, 64.1.3, 65.1.3 respectively |
+
+NeoForge and Forge use exact loader predicates until additional versions are verified. Neither declares 26.3 support. The version pairs are recorded in `platform-matrix.json`; do not bypass metadata with dependency overrides.
+
+On 2026-09-06, the candidate passed all 40 loader/game combinations in this table on Windows, plus three Fabric minimum-Loader checks (26.1, 26.2 and 26.3-pre-2 with Loader 0.19.3). Every run verified 13 transformed game classes and 42 hooks, then passed the shared widget/search checks. The Fabric candidate also passed all 11,172 modern Hangul syllable regression cases. These are local results; remote CI runs are reported separately.
+
+All four platforms run the same test-only Mixin and widget checks. Forge starts the checks through a separate fixture Mixin before the game window opens. NeoForge uses a separate fixture entrypoint with its early loading window disabled. Both read packaged candidate JARs, not production classes from development output directories, and require a success receipt matching the candidate SHA-256. A successful build is not accepted if the fixture failed to run.
+
+Forge's bundled upstream Mixin 0.8.7 does not recognize `JAVA_25`. Only the Forge artifact targets Java 21 bytecode and `JAVA_21` Mixin compatibility; the Minecraft dependencies and game runtime still require Java 25. No replacement Mixin library is bundled. Fabric and NeoForge retain Java 25 bytecode.
+
+**Native Windows IME verification remains pending for the new loader variants.** Automated preedit events test the transformed widgets, not physical keyboard input, Hanja candidates, window scaling or fullscreen. The beta.5 Fabric/26.2 manual results below must not be presented as manual verification of beta.6 or another loader.
+
+Build all artifacts and check the full matrix with Java 25 and Python 3.11+:
+
+```powershell
+.\verify-multiloader.ps1 -FullMatrix
+```
+
+For one platform:
+
+```powershell
+.\gradlew.bat verifyQuiltApplication --no-daemon
+.\gradlew.bat -Pplatform=neoforge :neoforge:build --no-daemon
+.\gradlew.bat -Pplatform=forge :forge:build --no-daemon
+```
+
+Platform JARs are produced in the root `build/libs` (Fabric/Quilt) and `platforms/<loader>/build/libs` directories. Verification fixtures stay outside those release directories. Source archives also exclude verification code. ForgeGradle may provision a Java 8 toolchain for its launcher helper; it is a development-tool requirement, not an additional player runtime requirement.
+
+## Previous release: Fabric 1.3.0-beta.5
 
 The 1.3.0-beta.5 candidate targets the following matrix. Development uses Java 25, Fabric Loader 0.19.5 and Fabric Loom 1.17.20; the minimum Loader requirement remains 0.19.3.
 

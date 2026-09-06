@@ -1,0 +1,42 @@
+// Resolve Quilt's own libraries, never a mixture of Fabric and Quilt runtimes.
+configurations {
+	quiltRuntime
+	quiltMetadata { transitive = false }
+}
+dependencies {
+	quiltMetadata "org.quiltmc:quilt-loader:${quilt_version}"
+}
+tasks.register('verifyQuiltApplication', JavaExec) {
+	timeout = java.time.Duration.ofMinutes(3)
+	group = 'verification'
+	description = 'Loads the exact Fabric candidate through Quilt and exercises transformed widgets.'
+	dependsOn verificationJar
+	if (!providers.gradleProperty('compatibilityJar').isPresent()) { dependsOn jar }
+	mainClass = 'org.quiltmc.loader.impl.launch.knot.KnotClient'
+	systemProperty 'fabric.development', 'true'
+	systemProperty 'loader.development', 'true'
+	systemProperty 'java.awt.headless', 'true'
+	systemProperty 'mixin.debug.countInjections', 'true'
+	doFirst {
+		def metadata = zipTree(configurations.quiltMetadata.singleFile).matching { include 'quilt_installer.json' }.singleFile
+		def libraries = new groovy.json.JsonSlurper().parse(metadata).libraries
+		dependencies.add('quiltRuntime', "org.quiltmc:quilt-loader:${quilt_version}")
+		(libraries.common + libraries.development + libraries.client).each {
+			dependencies.add('quiltRuntime', it.name)
+		}
+		def gameLibraries = sourceSets.client.runtimeClasspath.filter { path ->
+			!(path.name.startsWith('fabric-loader-') || path.name.startsWith('sponge-mixin-')
+				|| path.name.startsWith('mixinextras-') || path.name.startsWith('asm-'))
+		} - sourceSets.main.output - sourceSets.client.output
+		classpath = gameLibraries + configurations.quiltRuntime
+		def candidate = providers.gradleProperty('compatibilityJar').map { file(it) }
+			.getOrElse(tasks.jar.archiveFile.get().asFile)
+		def fixture = tasks.verificationJar.archiveFile.get().asFile
+		def runDir = layout.buildDirectory.dir("verification/quilt-${minecraft_version}").get().asFile
+		runDir.mkdirs()
+		workingDir runDir
+		systemProperty 'loader.addMods', candidate.absolutePath + File.pathSeparator + fixture.absolutePath
+		systemProperty 'hangul.verification.jar', candidate.absolutePath
+		systemProperty 'hangul.verification.result', new File(runDir, 'result.txt').absolutePath
+	}
+}

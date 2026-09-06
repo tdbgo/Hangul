@@ -11,6 +11,7 @@ base {
 }
 
 repositories {
+	maven { url = 'https://maven.quiltmc.org/repository/release/' }
 	// Add repositories to retrieve artifacts from in here.
 	// You should only use this when depending on other mods because
 	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
@@ -101,6 +102,7 @@ tasks.register('stageCompatibilityJar', Copy) {
 }
 
 tasks.register('verifyMixinApplication', JavaExec) {
+	timeout = java.time.Duration.ofMinutes(3)
 	group = 'verification'
 	description = 'Applies every candidate Mixin through Fabric Loader without starting a game window.'
 	dependsOn verificationJar, verifyBinaryCompatibility
@@ -119,6 +121,7 @@ tasks.register('verifyMixinApplication', JavaExec) {
 		runDirectory.mkdirs()
 		workingDir runDirectory
 		systemProperty 'fabric.addMods', compatibilityJar.get().absolutePath + File.pathSeparator + fixtureJar.get().asFile.absolutePath
+		systemProperty 'hangul.verification.jar', compatibilityJar.get().absolutePath
 	}
 }
 
@@ -160,6 +163,7 @@ test {
 check.dependsOn verifyHangulComposer, verifyMixinApplication
 
 jar {
+	archiveClassifier = 'fabric'
 	def projectName = project.name
 	inputs.property "projectName", projectName
 
@@ -167,6 +171,8 @@ jar {
 		rename { "${it}_$projectName"}
 	}
 }
+
+apply from: 'gradle/quilt-verification.gradle'
 
 // configure the maven publication
 publishing {

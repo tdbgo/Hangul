@@ -9,5 +9,18 @@ pluginManagement {
 	}
 }
 
+plugins {
+	id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
 // Should match your mod ID
 rootProject.name = 'Hangul'
+
+// Keep the Fabric build independent of the optional platform toolchains.
+def platform = providers.gradleProperty('platform').getOrElse('fabric')
+if (platform in ['neoforge', 'forge']) {
+	include platform
+	project(":${platform}").projectDir = file("platforms/${platform}")
+} else if (!(platform in ['fabric', 'quilt'])) {
+	throw new GradleException("Unknown platform: ${platform}")
+}
