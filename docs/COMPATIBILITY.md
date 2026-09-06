@@ -29,9 +29,9 @@ NeoForge/26.2 was also tested interactively on Windows on 2026-09-06: immediate 
 
 That native NeoForge run showed a deprecated `logoFile` metadata warning. The candidate now uses `iconFile`, following the [NeoForge mod-list migration](https://github.com/neoforged/Documentation/issues/372), with a packaging gate rejecting `logoFile`. This is a metadata-only change; the icon may not be shown by older 26.1 mod-list screens that predate `iconFile`. Input classes are unchanged. The rebuilt candidate passed all four declared NeoForge loader checks; the earlier native result must not be described as a native run of the new hash.
 
-Quilt/26.2 reached its isolated local world with the packaged candidate. Native Korean composition was not completed. Headless tests exercise the exact JAR through Quilt, but do not replace that missing native check.
+Quilt/26.2 was tested in its isolated local world with the packaged candidate: immediate native composition, final-consonant deletion, one chat submission, sign selection replacement and Enter navigation with save, and fullscreen/windowed transitions. Additional book saving and native Down-key delivery were not established by the recorded observations.
 
-**Native verification is partial, not a blanket release approval.** Remaining interactive checks include Quilt native composition, IME candidate cancellation and positioning across display changes, the full focus/scaling checklist, and the latest experimental target. Automated preedit/Hanja character events are not OS candidate-window verification. See the [release readiness record](RELEASE_READINESS.md) for the distinction between completed checks and upload gates.
+On 2026-09-06, the tester reported that all remaining checks were complete, closing the manual test request. No additional per-version, per-loader or artifact-hash execution records accompanied that confirmation. It is recorded as tester-reported completion, not as an independently observed run of every combination or of the updated NeoForge hash. Automated preedit/Hanja character events remain distinct from OS candidate-window verification, and 26.3 remains experimental. Remote CI and publication checks are still upload gates; see the [release readiness record](RELEASE_READINESS.md).
 
 Build all artifacts and check the full matrix with Java 25 and Python 3.11+:
 
