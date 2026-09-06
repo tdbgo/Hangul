@@ -23,6 +23,7 @@ sourceSets.verification.runtimeClasspath = configurations.verificationRuntimeCla
 sourceSets.main.runtimeClasspath = configurations.runtimeClasspath
 tasks.register('verificationJar', Jar) {
 	from sourceSets.verification.output
+	from('src/main/resources/pack.mcmeta')
 	archiveClassifier = 'verification'
 	destinationDirectory = layout.buildDirectory.dir('verification')
 	manifest { attributes 'MixinConfigs': 'hangul.verification.mixins.json' }

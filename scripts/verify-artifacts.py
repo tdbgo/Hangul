@@ -29,6 +29,11 @@ def verify(path: Path, loader: str) -> tuple[set[str], str]:
         assert config["compatibilityLevel"] == ("JAVA_21" if loader == "forge" else "JAVA_25")
         if loader == "forge":
             assert config["minVersion"] == "0.8.7"
+            assert "pack.mcmeta" in names, "Forge artifact is missing pack.mcmeta"
+            pack = json.loads(archive.read("pack.mcmeta"))["pack"]
+            assert pack["description"] == "Hangul resources"
+            # One pack is parsed for both resource (84–88) and data (101.1–107.1) formats.
+            assert pack["min_format"] == [84, 0] and pack["max_format"] == [107, 1]
         metadata = archive.read(metadata_paths[loader]).decode("utf-8")
         assert "${" not in metadata, "Unexpanded version"
         if loader == "fabric":

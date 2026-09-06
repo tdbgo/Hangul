@@ -64,6 +64,9 @@ public final class LoaderBehaviorCheck {
 			}
 			System.out.println("MIXIN_APPLICATION_OK targets=" + targets.size() + " hooks=" + hooks);
 			WidgetBehaviorCheck.run();
+			if (mod.getJarEntry("META-INF/mods.toml") != null) {
+				verifyForgePackMetadata(mod);
+			}
 			String result = System.getProperty("hangul.verification.result");
 			if (result != null) {
 				byte[] candidate = java.nio.file.Files.readAllBytes(java.nio.file.Path.of(System.getProperty("hangul.verification.jar")));
@@ -77,6 +80,27 @@ public final class LoaderBehaviorCheck {
 			System.exit(1);
 		}
 	}
+	private static void verifyForgePackMetadata(JarFile mod) throws java.io.IOException {
+		var entry = mod.getJarEntry("pack.mcmeta");
+		if (entry == null) throw new AssertionError("Forge artifact is missing pack.mcmeta");
+		try (var reader = new InputStreamReader(mod.getInputStream(entry), StandardCharsets.UTF_8)) {
+			var pack = JsonParser.parseReader(reader).getAsJsonObject().getAsJsonObject("pack");
+			if (!"Hangul resources".equals(pack.get("description").getAsString())) {
+				throw new AssertionError("Invalid Forge pack description");
+			}
+			// Forge reads the same metadata as both client resources and server data.
+			for (var type : net.minecraft.server.packs.PackType.values()) {
+				var formats = net.minecraft.server.packs.metadata.pack.PackFormat.packCodec(type)
+					.codec().parse(com.mojang.serialization.JsonOps.INSTANCE, pack).getOrThrow();
+				var current = net.minecraft.DetectedVersion.BUILT_IN.packVersion(type);
+				if (!formats.isValueInRange(current)) {
+					throw new AssertionError("Unsupported Forge pack format: " + type + " " + current);
+				}
+			}
+		}
+		System.out.println("FORGE_PACK_METADATA_OK client_resources=true server_data=true");
+	}
+
 	static java.util.List<org.objectweb.asm.tree.AnnotationNode> annotations(
 			java.util.List<org.objectweb.asm.tree.AnnotationNode> visible,
 			java.util.List<org.objectweb.asm.tree.AnnotationNode> invisible) {

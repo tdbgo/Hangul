@@ -21,7 +21,11 @@ All four platforms run the same test-only Mixin and widget checks. Forge starts 
 
 Forge's bundled upstream Mixin 0.8.7 does not recognize `JAVA_25`. Only the Forge artifact targets Java 21 bytecode and `JAVA_21` Mixin compatibility; the Minecraft dependencies and game runtime still require Java 25. No replacement Mixin library is bundled. Fabric and NeoForge retain Java 25 bytecode.
 
-**Native Windows IME verification remains pending for the new loader variants.** Automated preedit events test the transformed widgets, not physical keyboard input, Hanja candidates, window scaling or fullscreen. The beta.5 Fabric/26.2 manual results below must not be presented as manual verification of beta.6 or another loader.
+The initial Forge candidate's missing `pack.mcmeta` triggered a loading warning and subsequent integrated-server loot failures. The corrected artifact includes a format range covering both client resources (84–88) and server data (101.1–107.1); verification parses the range with each target game's codecs. The original artifact is rejected by the packaging gate.
+
+On 2026-09-06, the corrected Forge/26.2 artifact was also tested interactively on Windows: warning-free startup, the previously failing block-drop command, native chat composition and one Enter submission, two-line book input with save/reopen, sign composition and save, fullscreen/windowed transition, and composition/cancel after F3+T resource reload. The isolated world saved and the client exited normally. No F6 fallback or pasted Korean was used for those composition checks.
+
+**Native verification is partial, not a blanket release approval.** Hanja candidates, extended selection/page-navigation cases and the other Forge game versions still need interactive checks. NeoForge and Quilt native Windows IME checks remain pending. Automated preedit events and the beta.5 Fabric results below must not be presented as native verification of those variants.
 
 Build all artifacts and check the full matrix with Java 25 and Python 3.11+:
 
