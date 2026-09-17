@@ -52,9 +52,11 @@ jobs:
           - {minecraft: '26.1', os: windows-2025, loader: '0.19.5'}
           - {minecraft: '26.2', os: windows-2025, loader: '0.19.5'}
           - {minecraft: '26.3-pre-2', os: windows-2025, loader: '0.19.5'}
+          - {minecraft: '26.3', os: windows-2025, loader: '0.19.5'}
           - {minecraft: '26.2', os: ubuntu-24.04, loader: '0.19.3'}
           - {minecraft: '26.1', os: ubuntu-24.04, loader: '0.19.3'}
           - {minecraft: '26.3-pre-2', os: ubuntu-24.04, loader: '0.19.3'}
+          - {minecraft: '26.3', os: ubuntu-24.04, loader: '0.19.3'}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6

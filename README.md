@@ -10,6 +10,8 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 
 [Modrinth에서 다운로드](https://modrinth.com/mod/hangul) · [소스 코드](https://github.com/tdbgo/Hangul) · [문제 신고](https://github.com/tdbgo/Hangul/issues)
 
+개발 중인 `1.3.0-beta.7`은 Minecraft 26.3 정식판의 Fabric·Quilt·NeoForge 대응을 준비하고 있습니다. 공개된 beta.6의 지원 범위는 바뀌지 않으며, Forge는 26.2까지 유지합니다. 검사 결과와 배포 전 남은 항목은 [배포 준비 상태](docs/RELEASE_READINESS.md)에 정리합니다.
+
 ## 기본 사용법
 
 모드를 설치한 뒤에는 별도의 전환키를 누를 필요가 없습니다.
@@ -97,6 +99,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 ```
 
 `-FullMatrix`를 생략하면 기본 대상인 26.2에서 네 로더를 검사합니다. 입력 로직은 공통 소스를 사용하며, 빌드 도구와 검사 코드는 배포 JAR에 포함되지 않습니다.
+
+NeoForge는 기본적으로 게임 소스를 디컴파일·재컴파일하지 않는 공식 바이너리 패치 경로를 사용합니다. 소스 수준 디버깅이 필요하면 Gradle 호출에 `-PminecraftSources=true`를 추가할 수 있습니다. 이 설정은 개발 환경에만 영향을 주며 배포 모드의 의존성을 늘리지 않습니다.
 
 구조와 성능 경계는 [아키텍처 문서](docs/ARCHITECTURE.md), 버전별 검증 범위는 [호환성 문서](docs/COMPATIBILITY.md), 기여 코드·자산의 출처 기준은 [기여 안내](CONTRIBUTING.md), 포함된 이미지의 출처는 [자산 출처 문서](docs/ASSET_PROVENANCE.md), 보안 신고는 [보안 정책](SECURITY.md), 공개 전 검사는 [릴리스 체크리스트](docs/RELEASE_CHECKLIST.md)에 정리되어 있습니다.
 

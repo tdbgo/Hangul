@@ -63,6 +63,7 @@ public final class LoaderBehaviorCheck {
 				throw new AssertionError("No Mixin targets checked");
 			}
 			System.out.println("MIXIN_APPLICATION_OK targets=" + targets.size() + " hooks=" + hooks);
+			InputBackendCheck.run();
 			WidgetBehaviorCheck.run();
 			if (mod.getJarEntry("META-INF/mods.toml") != null) {
 				verifyForgePackMetadata(mod);

@@ -2,6 +2,25 @@
 
 Hangul shares its input and search sources across loaders. The Fabric JAR also runs on Quilt; NeoForge and Forge have separate JARs. No separate API mod, compatibility bridge or native library is required. Stable 26.2 remains the compilation target. The compatibility gate checks each exact platform JAR on the declared loader/version combinations.
 
+## Minecraft 26.3 support candidate: 1.3.0-beta.7
+
+This is an unreleased Hangul candidate for the **stable Minecraft 26.3 release**. It retains the beta.6 game targets and adds 26.3 for Fabric, Quilt and NeoForge. Existing public beta.6 files are unchanged and do not permit stable 26.3.
+
+| Platform | Added game target | Loader selected for verification |
+| --- | --- | --- |
+| Fabric | 26.3 | 0.19.5; minimum 0.19.3 checked separately |
+| Quilt | 26.3 | 0.31.0-beta.4, using the Fabric JAR |
+| NeoForge | 26.3 | 26.3.0.3-beta, using the NeoForge JAR |
+| Forge | None | No official 26.3 artifact was available on 2026-09-17; retain the beta.6 pairs below |
+
+The selected NeoForge loader is itself a beta. An untested newer loader is not implicitly supported. The candidate keeps exact loader predicates in `platform-matrix.json` and its packaged metadata.
+
+The same 26.2-built JAR is tested on each supported game version. The shared SDL/GLFW key adapter does not need a second native library or a separate 26.3 build. New backend checks resolve each runtime's actual key constants, exercise A–Z and Shift/shortcut classification, and assert that ordinary movement and language-switch keys pass through the controller. They do not simulate Windows IME key delivery. Every loader must now produce a fresh success receipt matching the exact candidate SHA-256; an early process exit or stale result cannot pass.
+
+On 2026-09-17, the complete Windows run passed 43 loader/game pairs: 17 each on Fabric and Quilt, five on NeoForge, and four on Forge. Four additional minimum-Fabric-Loader checks passed on 26.1, 26.2, 26.3-pre-2 and 26.3. Each run verified 13 transformed classes, 42 hooks, backend key handling and widget/search behavior. All 11,172 modern Hangul syllable cases and final packaging checks passed. Production class bytes match beta.6 for each platform. These results do not establish native Windows IME behavior on 26.3.
+
+See [release readiness](RELEASE_READINESS.md) for current results and the remaining native Windows checks. The 26.3 support declaration is not a substitute for those checks, and this candidate is not yet published.
+
 ## Multiloader beta: 1.3.0-beta.6
 
 Version beta.6 provides Fabric/Quilt, NeoForge and Forge files. The older beta.5 file remains Fabric-only; support is not applied retroactively.
@@ -107,6 +126,8 @@ CI builds one stable candidate and passes it to the complete Linux version matri
 - [Minecraft Java Edition 26.3 Snapshot 4](https://feedback.minecraft.net/hc/en-us/articles/47424728811149-Minecraft-Java-Edition-26-3-Snapshot-4)
 - [Fabric game-version metadata](https://meta.fabricmc.net/v2/versions/game)
 - [Fabric Loader metadata for 26.3-pre-2](https://meta.fabricmc.net/v2/versions/loader/26.3-pre-2)
+- [Fabric Loader metadata for 26.3](https://meta.fabricmc.net/v2/versions/loader/26.3)
+- [Minecraft Java Edition 26.3](https://feedback.minecraft.net/hc/en-us/articles/48913133328013-Minecraft-Java-Edition-26-3)
 - [Minecraft 26.3 Pre-release 2](https://www.minecraft.net/en-us/article/minecraft-26-3-pre-release-2)
 - [Fabric Loom documentation](https://docs.fabricmc.net/develop/loom/)
 - [Fabric mod dependency version syntax](https://docs.fabricmc.net/develop/loader/fabric-mod-json)

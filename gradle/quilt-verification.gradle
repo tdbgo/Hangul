@@ -17,6 +17,10 @@ tasks.register('verifyQuiltApplication', JavaExec) {
 	systemProperty 'loader.development', 'true'
 	systemProperty 'java.awt.headless', 'true'
 	systemProperty 'mixin.debug.countInjections', 'true'
+	def candidateFile = providers.gradleProperty('compatibilityJar').map { file(it) }
+		.orElse(tasks.named('jar').flatMap { it.archiveFile }.map { it.asFile })
+	def runPath = layout.buildDirectory.dir("verification/quilt-${minecraft_version}")
+	configureVerificationReceipt(it, runPath.map { it.file('result.txt') }, candidateFile)
 	doFirst {
 		def metadata = zipTree(configurations.quiltMetadata.singleFile).matching { include 'quilt_installer.json' }.singleFile
 		def libraries = new groovy.json.JsonSlurper().parse(metadata).libraries
@@ -29,14 +33,12 @@ tasks.register('verifyQuiltApplication', JavaExec) {
 				|| path.name.startsWith('mixinextras-') || path.name.startsWith('asm-'))
 		} - sourceSets.main.output - sourceSets.client.output
 		classpath = gameLibraries + configurations.quiltRuntime
-		def candidate = providers.gradleProperty('compatibilityJar').map { file(it) }
-			.getOrElse(tasks.jar.archiveFile.get().asFile)
+		def candidate = candidateFile.get()
 		def fixture = tasks.verificationJar.archiveFile.get().asFile
-		def runDir = layout.buildDirectory.dir("verification/quilt-${minecraft_version}").get().asFile
+		def runDir = runPath.get().asFile
 		runDir.mkdirs()
 		workingDir runDir
 		systemProperty 'loader.addMods', candidate.absolutePath + File.pathSeparator + fixture.absolutePath
 		systemProperty 'hangul.verification.jar', candidate.absolutePath
-		systemProperty 'hangul.verification.result', new File(runDir, 'result.txt').absolutePath
 	}
 }

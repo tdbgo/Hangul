@@ -7,7 +7,11 @@ apply from: rootProject.file('gradle/verification-launch.gradle')
 def candidate = providers.gradleProperty('compatibilityJar').map { file(it) }
 	.getOrElse(tasks.jar.archiveFile.get().asFile)
 neoForge {
-	version = project.neo_version
+	enable {
+		version = project.neo_version
+		// Match CI's binary pipeline; source generation is optional for local debugging.
+		disableRecompilation = !providers.gradleProperty('minecraftSources').map { it.toBoolean() }.getOrElse(false)
+	}
 	addModdingDependenciesTo sourceSets.verification
 	mods {
 		hangul { sourceSet sourceSets.main }

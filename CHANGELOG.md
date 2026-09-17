@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.0-beta.7 (unreleased)
+
+- Minecraft 26.3 정식판을 Fabric·Quilt·NeoForge 검증 대상에 추가; 기존 26.1–26.2 지원 유지
+- GLFW·SDL3별 물리 키, Shift·단축키, F6 키 판정과 일반 키 통과 회귀 검사 추가
+- 모든 로더에서 검사 완료 기록과 후보 JAR 해시를 대조하도록 검증 절차 통일
+- NeoForge 개발 빌드는 기본적으로 바이너리 패치 경로를 사용해 게임 소스 디컴파일·재컴파일 생략
+- Forge는 26.3용 공식 로더가 없어 기존 지원 범위 유지
+
+26.3의 자동 호환성 검사와 실제 Windows IME 확인은 구분합니다. 현재 검증 결과와 배포 전 남은 항목은 [배포 준비 상태](docs/RELEASE_READINESS.md)를 참고해 주세요.
+
 ## 1.3.0-beta.6 (2026-09-06)
 
 - Fabric JAR의 Quilt 호환 검사와 NeoForge·Forge 전용 빌드 추가

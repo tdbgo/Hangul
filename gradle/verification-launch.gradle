@@ -1,4 +1,6 @@
 // This configuration belongs only to disposable test instances under build/.
+apply from: rootProject.file('gradle/verification-receipt.gradle')
+
 tasks.register('prepareHeadlessVerification', Copy) {
 	from rootProject.file('src/verification/config')
 	into layout.buildDirectory.dir('run-verification/config')
@@ -7,20 +9,7 @@ def resultFile = layout.buildDirectory.file('run-verification/result.txt')
 ext.configureVerificationLaunch = { task ->
 	task.dependsOn 'prepareHeadlessVerification'
 	task.timeout = java.time.Duration.ofMinutes(3)
-	task.systemProperty 'hangul.verification.result', resultFile.get().asFile.absolutePath
-	task.doFirst {
-		java.nio.file.Files.deleteIfExists(resultFile.get().asFile.toPath())
-	}
-	task.doLast {
-		def result = resultFile.get().asFile
-		if (!result.isFile() || !result.text.startsWith('PASS sha256=')) {
-			throw new GradleException('Verification exited without a success receipt')
-		}
-		def candidate = providers.gradleProperty('compatibilityJar').map { file(it) }
-			.getOrElse(tasks.jar.archiveFile.get().asFile)
-		def hash = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance('SHA-256').digest(candidate.bytes))
-		if (!result.text.startsWith("PASS sha256=${hash} ")) {
-			throw new GradleException('Verification receipt does not match the candidate JAR')
-		}
-	}
+	def candidate = providers.gradleProperty('compatibilityJar').map { file(it) }
+		.orElse(tasks.named('jar').flatMap { it.archiveFile }.map { it.asFile })
+	configureVerificationReceipt(task, resultFile, candidate)
 }

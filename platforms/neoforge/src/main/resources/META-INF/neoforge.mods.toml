@@ -18,11 +18,11 @@ config="hangul.client.mixins.json"
 [[dependencies.hangul]]
 modId="neoforge"
 type="required"
-versionRange="[26.1.0.19-beta],[26.1.1.15-beta],[26.1.2.104],[26.2.0.77]"
+versionRange="[26.1.0.19-beta],[26.1.1.15-beta],[26.1.2.104],[26.2.0.77],[26.3.0.3-beta]"
 side="CLIENT"
 
 [[dependencies.hangul]]
 modId="minecraft"
 type="required"
-versionRange="[26.1],[26.1.1],[26.1.2],[26.2]"
+versionRange="[26.1],[26.1.1],[26.1.2],[26.2],[26.3]"
 side="CLIENT"

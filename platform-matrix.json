@@ -3,7 +3,8 @@
     {"minecraft": "26.1", "loader": "26.1.0.19-beta"},
     {"minecraft": "26.1.1", "loader": "26.1.1.15-beta"},
     {"minecraft": "26.1.2", "loader": "26.1.2.104"},
-    {"minecraft": "26.2", "loader": "26.2.0.77"}
+    {"minecraft": "26.2", "loader": "26.2.0.77"},
+    {"minecraft": "26.3", "loader": "26.3.0.3-beta"}
   ],
   "forge": [
     {"minecraft": "26.1", "loader": "26.1-62.0.9"},

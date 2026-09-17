@@ -1,0 +1,18 @@
+// A clean process exit alone does not establish that the fixture actually ran.
+ext.configureVerificationReceipt = { task, resultFile, candidateFile ->
+	task.systemProperty 'hangul.verification.result', resultFile.get().asFile.absolutePath
+	task.doFirst {
+		java.nio.file.Files.deleteIfExists(resultFile.get().asFile.toPath())
+	}
+	task.doLast {
+		def result = resultFile.get().asFile
+		if (!result.isFile() || !result.text.startsWith('PASS sha256=')) {
+			throw new GradleException('Verification exited without a success receipt')
+		}
+		def hash = java.util.HexFormat.of().formatHex(
+			java.security.MessageDigest.getInstance('SHA-256').digest(candidateFile.get().bytes))
+		if (!result.text.startsWith("PASS sha256=${hash} ")) {
+			throw new GradleException('Verification receipt does not match the candidate JAR')
+		}
+	}
+}

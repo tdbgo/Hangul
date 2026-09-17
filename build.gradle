@@ -74,6 +74,8 @@ dependencies {
 def compatibilityJar = providers.gradleProperty('compatibilityJar')
 	.map { file(it) }.orElse(tasks.named('jar').flatMap { it.archiveFile }.map { it.asFile })
 
+apply from: 'gradle/verification-receipt.gradle'
+
 tasks.register('verifyBinaryCompatibility', JavaExec) {
 	group = 'verification'
 	description = 'Checks the exact candidate JAR against Minecraft descriptors and Mixin targets.'
@@ -116,6 +118,7 @@ tasks.register('verifyMixinApplication', JavaExec) {
 	systemProperty 'java.awt.headless', 'true'
 	def runPath = layout.buildDirectory.dir("verification/run-${project.minecraft_version}")
 	def fixtureJar = tasks.named('verificationJar').flatMap { it.archiveFile }
+	configureVerificationReceipt(it, runPath.map { it.file('result.txt') }, compatibilityJar)
 	doFirst {
 		def runDirectory = runPath.get().asFile
 		runDirectory.mkdirs()
