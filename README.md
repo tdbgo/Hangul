@@ -10,7 +10,7 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 
 [Modrinth에서 다운로드](https://modrinth.com/mod/hangul) · [소스 코드](https://github.com/tdbgo/Hangul) · [문제 신고](https://github.com/tdbgo/Hangul/issues)
 
-개발 중인 `1.3.0-beta.7`은 Minecraft 26.3 정식판의 Fabric·Quilt·NeoForge 대응을 준비하고 있습니다. 공개된 beta.6의 지원 범위는 바뀌지 않으며, Forge는 26.2까지 유지합니다. 검사 결과와 배포 전 남은 항목은 [배포 준비 상태](docs/RELEASE_READINESS.md)에 정리합니다.
+`1.3.0-beta.7`은 Minecraft 26.3 정식판의 Fabric·Quilt·NeoForge 지원을 위한 배포 준비 검사를 마쳤으며 아직 공개하지 않았습니다. 공개된 beta.6의 지원 범위는 바뀌지 않으며, Forge는 26.2까지 유지합니다. 검증 범위와 공개 절차는 [배포 준비 상태](docs/RELEASE_READINESS.md)에 정리합니다.
 
 ## 기본 사용법
 

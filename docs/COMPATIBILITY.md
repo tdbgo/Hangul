@@ -19,7 +19,7 @@ The same 26.2-built JAR is tested on each supported game version. The shared SDL
 
 On 2026-09-17, the complete Windows run passed 43 loader/game pairs: 17 each on Fabric and Quilt, five on NeoForge, and four on Forge. Four additional minimum-Fabric-Loader checks passed on 26.1, 26.2, 26.3-pre-2 and 26.3. Each run verified 13 transformed classes, 42 hooks, backend key handling and widget/search behavior. All 11,172 modern Hangul syllable cases and final packaging checks passed. Production class bytes match beta.6 for each platform. These results do not establish native Windows IME behavior on 26.3.
 
-See [release readiness](RELEASE_READINESS.md) for current results and the remaining native Windows checks. The 26.3 support declaration is not a substitute for those checks, and this candidate is not yet published.
+Native 26.3 checks were then completed using separate Fabric, Quilt and NeoForge clients, direct observations and explicit tester confirmation. The [release readiness record](RELEASE_READINESS.md) separates these evidence types and their limits; it does not claim every detailed screen check was repeated on every loader. Release preparation is complete, but this candidate is not yet published.
 
 ## Multiloader beta: 1.3.0-beta.6
 
