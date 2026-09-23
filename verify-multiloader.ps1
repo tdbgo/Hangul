@@ -44,7 +44,7 @@ try {
 		}
 		$minimumLoader = (Select-String -Path gradle.properties -Pattern '^loader_api_version=(.+)$').Matches.Groups[1].Value
 		if (!$minimumLoader) { throw 'Missing minimum Fabric Loader version' }
-		foreach ($target in @('26.1', '26.2', '26.3-pre-2', '26.3')) {
+		foreach ($target in @('26.1', '26.2', '26.3-pre-2', '26.3', '26.4-snapshot-1')) {
 			Invoke-CheckedGradle -Arguments @('verifyMixinApplication', "-Pminecraft_version=$target", "-Ploader_version=$minimumLoader", "-PcompatibilityJar=$fabricCandidate")
 			Assert-FabricCandidate
 		}

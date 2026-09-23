@@ -2,9 +2,26 @@
 
 Hangul shares its input and search sources across loaders. The Fabric JAR also runs on Quilt; NeoForge and Forge have separate JARs. No separate API mod, compatibility bridge or native library is required. Stable 26.2 remains the compilation target. The compatibility gate checks each exact platform JAR on the declared loader/version combinations.
 
+## Minecraft 26.4 Snapshot 1 candidate: 1.3.0-beta.8
+
+The 26.4 line has only reached Snapshot 1 as of 2026-09-23. This candidate adds **that exact snapshot** to the Fabric/Quilt JAR. It does not declare later snapshots or the eventual stable 26.4 release. Fabric Loader 0.19.5 and Quilt Loader 0.31.0-beta.4 both applied the packaged JAR's 13 target classes and 42 hooks against Snapshot 1, and the input, search, and sign widget checks passed. Fabric Loader 0.19.3 also passed its minimum-version check.
+
+The unchanged production code still compiles against Minecraft 26.2. The Windows full-matrix run passed 45 loader/game combinations: 18 each for Fabric and Quilt, five for NeoForge, and four for Forge. Five more minimum-Fabric-Loader checks passed, including 26.4 Snapshot 1. Each platform JAR passed packaging checks; the same shared classes are present in all three files.
+
+A 26.4 development client started with the default Vulkan backend, entered an isolated world, displayed and sent committed Korean text, saved the world and exited normally. The automation inserted complete Unicode text, so this observation alone does **not** prove live Windows IME composition or Hanja candidate behavior. The tester subsequently confirmed Korean composition and Hanja input in the 26.4 test window. The evidence and its limits are recorded in [release readiness](RELEASE_READINESS.md).
+
+| Platform | 26.4 Snapshot 1 | Previous targets |
+| --- | --- | --- |
+| Fabric | Candidate JAR passed Loader 0.19.5 and minimum 0.19.3 checks | 26.1–26.3 as declared in the JAR |
+| Quilt | Same candidate JAR passed Loader 0.31.0-beta.4 checks | Same declared versions as Fabric |
+| NeoForge | No 26.4 loader artifact available when checked | 26.1–26.3 |
+| Forge | No 26.4 loader artifact available when checked | 26.1–26.2 |
+
+The input path uses Minecraft's SDL3 abstraction and does not call Vulkan. Still, the new default renderer makes a real 26.4 startup and screen check useful in addition to Mixin tests. The release gate checks the exact snapshot ID and Fabric's normalized predicate `26.4-alpha.1`; it does not bypass dependency metadata.
+
 ## Minecraft 26.3 support candidate: 1.3.0-beta.7
 
-This is an unreleased Hangul candidate for the **stable Minecraft 26.3 release**. It retains the beta.6 game targets and adds 26.3 for Fabric, Quilt and NeoForge. Existing public beta.6 files are unchanged and do not permit stable 26.3.
+This is the published Hangul release for **stable Minecraft 26.3**. It retains the beta.6 game targets and adds 26.3 for Fabric, Quilt and NeoForge. Older beta.6 files are unchanged and do not permit stable 26.3.
 
 | Platform | Added game target | Loader selected for verification |
 | --- | --- | --- |
@@ -19,7 +36,7 @@ The same 26.2-built JAR is tested on each supported game version. The shared SDL
 
 On 2026-09-17, the complete Windows run passed 43 loader/game pairs: 17 each on Fabric and Quilt, five on NeoForge, and four on Forge. Four additional minimum-Fabric-Loader checks passed on 26.1, 26.2, 26.3-pre-2 and 26.3. Each run verified 13 transformed classes, 42 hooks, backend key handling and widget/search behavior. All 11,172 modern Hangul syllable cases and final packaging checks passed. Production class bytes match beta.6 for each platform. These results do not establish native Windows IME behavior on 26.3.
 
-Native 26.3 checks were then completed using separate Fabric, Quilt and NeoForge clients, direct observations and explicit tester confirmation. The [release readiness record](RELEASE_READINESS.md) separates these evidence types and their limits; it does not claim every detailed screen check was repeated on every loader. Release preparation is complete, but this candidate is not yet published.
+Native 26.3 checks were then completed using separate Fabric, Quilt and NeoForge clients, direct observations and explicit tester confirmation. The [release readiness record](RELEASE_READINESS.md) separates these evidence types and their limits; it does not claim every detailed screen check was repeated on every loader. Beta.7 was published on 2026-09-17.
 
 ## Multiloader beta: 1.3.0-beta.6
 

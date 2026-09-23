@@ -1,6 +1,12 @@
 # Changelog
 
-## 1.3.0-beta.7 (unreleased)
+## 1.3.0-beta.8 (unreleased)
+
+- Minecraft 26.4 Snapshot 1을 Fabric·Quilt 시험 지원 대상에 추가
+- 동일한 Fabric 배포 JAR을 26.1–26.4 시험판에서 검증하고, 26.4의 Windows·최소 Loader 검사를 CI에 추가
+- NeoForge는 26.3, Forge는 26.2까지의 기존 지원 범위를 유지
+
+## 1.3.0-beta.7 (2026-09-17)
 
 - Minecraft 26.3 정식판을 Fabric·Quilt·NeoForge 검증 대상에 추가; 기존 26.1–26.2 지원 유지
 - GLFW·SDL3별 물리 키, Shift·단축키, F6 키 판정과 일반 키 통과 회귀 검사 추가
