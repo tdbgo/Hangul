@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.3.0-beta.8 (unreleased)
+## 1.3.0-beta.8 (2026-09-23)
 
 - Minecraft 26.4 Snapshot 1을 Fabric·Quilt 시험 지원 대상에 추가
 - 동일한 Fabric 배포 JAR을 26.1–26.4 시험판에서 검증하고, 26.4의 Windows·최소 Loader 검사를 CI에 추가
