@@ -10,7 +10,15 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 
 [Modrinth에서 다운로드](https://modrinth.com/mod/hangul) · [소스 코드](https://github.com/tdbgo/Hangul) · [문제 신고](https://github.com/tdbgo/Hangul/issues)
 
-`1.3.0-beta.8`은 Minecraft 26.4 Snapshot 1을 Fabric·Quilt 시험 지원 대상에 추가합니다. NeoForge는 26.3, Forge는 26.2까지 지원하며, 26.4 후속 스냅샷과 정식판의 호환성을 미리 선언하지 않습니다. 로더별 검증 범위는 [호환성 문서](docs/COMPATIBILITY.md)에 정리합니다.
+`1.3.0-beta.9`는 Minecraft 26.4 Snapshot 2를 Fabric·Quilt 시험 지원 대상에 추가합니다. NeoForge와 Forge는 변경이 없어 `1.3.0-beta.8`을 계속 사용합니다. 26.4 후속 스냅샷과 정식판의 호환성을 미리 선언하지 않습니다. 로더별 검증 범위는 [호환성 문서](docs/COMPATIBILITY.md)에 정리합니다.
+
+| 로더 | 최신 파일 버전 | 지원 범위 |
+| --- | --- | --- |
+| Fabric·Quilt | 1.3.0-beta.9 | 26.1–26.3 및 명시된 시험판, 26.4 Snapshot 1–2 |
+| NeoForge | 1.3.0-beta.8 | 26.1, 26.1.1, 26.1.2, 26.2, 26.3 |
+| Forge | 1.3.0-beta.8 | 26.1, 26.1.1, 26.1.2, 26.2 |
+
+모든 로더가 같은 릴리스 번호를 가질 필요는 없습니다. 기능·지원 범위·필수 메타데이터가 달라진 파일만 새로 배포합니다.
 
 ## 기본 사용법
 
@@ -99,6 +107,14 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 ```
 
 `-FullMatrix`를 생략하면 기본 대상인 26.2에서 네 로더를 검사합니다. 입력 로직은 공통 소스를 사용하며, 빌드 도구와 검사 코드는 배포 JAR에 포함되지 않습니다.
+
+Fabric·Quilt만 변경한 경우에는 검사 범위를 선택할 수 있습니다.
+
+```powershell
+.\verify-multiloader.ps1 -Platforms fabric -FullMatrix
+```
+
+검사와 배포는 별개입니다. CI가 모든 로더를 회귀 검사하더라도 모든 파일을 새 릴리스에 올리지는 않습니다. 플랫폼별 버전과 변경 없는 파일의 재배포 차단 절차는 [릴리스 체크리스트](docs/RELEASE_CHECKLIST.md)를 따릅니다.
 
 NeoForge는 기본적으로 게임 소스를 디컴파일·재컴파일하지 않는 공식 바이너리 패치 경로를 사용합니다. 소스 수준 디버깅이 필요하면 Gradle 호출에 `-PminecraftSources=true`를 추가할 수 있습니다. 이 설정은 개발 환경에만 영향을 주며 배포 모드의 의존성을 늘리지 않습니다.
 

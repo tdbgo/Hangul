@@ -2,6 +2,14 @@
 
 Hangul shares its input and search sources across loaders. The Fabric JAR also runs on Quilt; NeoForge and Forge have separate JARs. No separate API mod, compatibility bridge or native library is required. Stable 26.2 remains the compilation target. The compatibility gate checks each exact platform JAR on the declared loader/version combinations.
 
+## Minecraft 26.4 Snapshot 2: 1.3.0-beta.9
+
+As of 2026-10-01, the latest 26.4 preview is [Snapshot 2](https://www.minecraft.net/en-us/article/minecraft-26-4-snapshot-2), released on September 29. Beta.9 adds exactly that version to the Fabric/Quilt descriptor (`26.4-alpha.2` in Fabric's normalization). The compilation baseline remains 26.2; production input and search code is unchanged. Future snapshots and stable 26.4 are not declared.
+
+Fabric/Quilt now declares 19 exact game targets. The verification matrix includes Snapshot 2 on Windows and Linux, Quilt 0.31.0-beta.4, Fabric 0.19.5 and the minimum Fabric Loader 0.19.3. Results and the distinction between automated checks and native IME observations are recorded in [release readiness](RELEASE_READINESS.md).
+
+Only Fabric/Quilt advances to beta.9. NeoForge remains beta.8 for 26.1–26.3 and Forge remains beta.8 for 26.1–26.2. Their predicates are unchanged. CI may rebuild these older-version artifacts for regression checks, but those files are not new releases. Platform versions are independent; the [release gate](RELEASE_CHECKLIST.md) selects only changed files and rejects version-only republication.
+
 ## Minecraft 26.4 Snapshot 1: 1.3.0-beta.8
 
 The 26.4 line has only reached Snapshot 1 as of 2026-09-23. This version adds **that exact snapshot** to the Fabric/Quilt JAR. It does not declare later snapshots or the eventual stable 26.4 release. Fabric Loader 0.19.5 and Quilt Loader 0.31.0-beta.4 both applied the packaged JAR's 13 target classes and 42 hooks against Snapshot 1, and the input, search, and sign widget checks passed. Fabric Loader 0.19.3 also passed its minimum-version check.

@@ -71,11 +71,24 @@ def verify(path: Path, loader: str) -> tuple[set[str], str]:
 
 
 def main() -> None:
-    if len(sys.argv) != 4:
-        raise SystemExit("Usage: verify-artifacts.py FABRIC_JAR NEOFORGE_JAR FORGE_JAR")
-    classes = [verify(Path(path), loader) for path, loader in zip(sys.argv[1:], ("fabric", "neoforge", "forge"))]
-    assert classes[0] == classes[1] == classes[2], "Shared classes or release versions differ between loaders"
-    print("All platforms ship the same shared class set; no bundled runtime libraries or test fixtures.")
+    if not 2 <= len(sys.argv) <= 4:
+        raise SystemExit("Usage: verify-artifacts.py JAR [JAR ...] (one per selected platform)")
+    properties = dict(line.split("=", 1) for line in (Path(__file__).resolve().parents[1] / "gradle.properties").read_text().splitlines()
+                      if "=" in line and not line.startswith("#"))
+    results = []
+    seen = set()
+    for argument in sys.argv[1:]:
+        path = Path(argument)
+        with ZipFile(path) as archive:
+            names = set(archive.namelist())
+        loader = "fabric" if "fabric.mod.json" in names else "neoforge" if "META-INF/neoforge.mods.toml" in names else "forge"
+        assert loader not in seen, f"Duplicate platform: {loader}"
+        seen.add(loader)
+        classes, version = verify(path, loader)
+        assert version == properties[f"{loader}_mod_version"], f"Unexpected {loader} version: {version}"
+        results.append(classes)
+    assert all(classes == results[0] for classes in results), "Shared class sets differ between selected loaders"
+    print("Selected platforms passed packaging checks; platform versions may differ.")
 
 
 if __name__ == "__main__":

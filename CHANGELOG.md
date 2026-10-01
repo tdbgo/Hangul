@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0-beta.9 (2026-10-01) — Fabric·Quilt
+
+- Minecraft 26.4 Snapshot 2를 Fabric·Quilt 시험 지원 대상에 추가; 기존 Snapshot 1과 26.1–26.3 지원 유지
+- 신규 대상의 Windows·최소 Fabric Loader 검사를 CI에 추가
+- 로더별 파일 버전을 분리하고, 실제 내용 변경 없이 버전 번호만 바뀐 파일의 재배포를 차단
+- 이번 릴리스는 Fabric·Quilt 공용 파일만 제공; NeoForge·Forge는 기존 beta.8 유지
+
 ## 1.3.0-beta.8 (2026-09-23)
 
 - Minecraft 26.4 Snapshot 1을 Fabric·Quilt 시험 지원 대상에 추가

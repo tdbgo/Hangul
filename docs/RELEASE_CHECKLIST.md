@@ -6,7 +6,23 @@
 - `git status --short --ignored`로 `build/`, `run/`, `.gradle/`, `.toolchains/`, IDE 설정과 로그가 추적되지 않는지 확인합니다.
 - 첫 공개라면 예제 템플릿 이력을 그대로 내보내지 말고 Hangul의 검토된 파일로 새 초기 커밋을 만듭니다.
 - 추적 파일과 커밋 이력에 토큰, 비밀번호, 로컬 절대 경로, 실행 로그, 개발 대화나 임시 메모가 없는지 검사합니다.
-- `README.md`, `fabric.mod.json`, JAR 파일명과 버전이 일치하는지 확인합니다.
+- `README.md`의 로더별 버전, 해당 JAR 메타데이터와 파일명이 일치하는지 확인합니다. 모든 로더의 번호를 일괄적으로 올리지 않습니다.
+
+## 플랫폼별 배포 범위
+
+- `gradle.properties`의 `mod_version`은 이번 릴리스 번호입니다. `fabric_mod_version`, `neoforge_mod_version`, `forge_mod_version`은 각 파일의 실제 버전이며 독립적으로 유지합니다.
+- 기능·지원 게임/로더·필수 리소스나 메타데이터가 바뀐 플랫폼만 번호를 올립니다. CI·문서 수정이나 압축 시간·순서 변경만으로는 새 파일을 배포하지 않습니다.
+- 이번 `mod_version`과 같은 플랫폼 버전만 업로드 대상입니다. Fabric 파일은 Quilt와 공유합니다. 다른 플랫폼은 기존 공개 파일을 계속 안내합니다.
+- 이전 공개 JAR을 별도 비교 디렉토리에 내려받고 아래 게이트를 실행합니다. 비교 디렉토리에는 선택한 플랫폼당 이전 파일 하나만 둡니다.
+
+```powershell
+python scripts/verify-artifacts.py build/libs/hangul-1.3.0-beta.9-fabric.jar
+python scripts/stage-release.py build/libs/hangul-1.3.0-beta.9-fabric.jar --previous-dir .toolchains/release-baseline --output-dir build/release/1.3.0-beta.9
+```
+
+게이트는 모든 클래스·리소스를 비교하되 ZIP 압축·순서·시간, 텍스트 줄바꿈과 모드 버전 필드만 정규화합니다. 버전 번호만 바뀐 JAR, 미선택 플랫폼, 이전 파일 누락, 중복·누락된 플랫폼, 배포 폴더의 잔여 파일을 거부합니다. 새 지원 버전이 들어간 메타데이터는 실제 변경으로 취급합니다. 기존 파일이 다른 내용이면 덮어쓰지 않습니다.
+
+GitHub에는 게이트가 만든 폴더의 JAR과 체크섬만 올리고, Modrinth에서도 같은 JAR만 업로드합니다. 전체 CI 산출물(`verified-*`)을 일괄 배포하지 않습니다. 기존 Forge·NeoForge 릴리스는 삭제하거나 다시 올리지 않습니다.
 
 ## 라이선스와 브랜드
 
@@ -24,13 +40,13 @@
 
 - 조합·검색 테스트, 바이너리 검사와 실제 Mixin 적용·위젯 검사가 모두 성공해야 합니다.
 - `verify-compatibility.ps1`로 동일한 배포 후보 JAR을 전체 선언 버전에서 검사합니다.
-- 멀티로더 릴리스는 `verify-multiloader.ps1 -FullMatrix`와 패키지 검사를 통과해야 합니다. 로더별 최종 파일 하나를 고정하고 버전별 검사에서 다시 빌드한 파일로 바꾸지 않습니다.
-- 네 로더 모두 현재 실행이 남긴 성공 기록과 후보 JAR의 SHA-256이 일치해야 합니다. 프로세스 종료 코드나 이전 실행의 성공 기록만으로 통과 처리하지 않습니다.
+- 멀티로더 릴리스는 `verify-multiloader.ps1 -FullMatrix`와 패키지 검사를 통과해야 합니다. 선택 릴리스는 `-Platforms fabric`처럼 해당 플랫폼을 지정합니다. 로더별 최종 파일 하나를 고정하고 버전별 검사에서 다시 빌드한 파일로 바꾸지 않습니다.
+- 배포하는 로더는 모두 현재 실행이 남긴 성공 기록과 후보 JAR의 SHA-256이 일치해야 합니다. 프로세스 종료 코드나 이전 실행의 성공 기록만으로 통과 처리하지 않습니다.
 - Quilt는 Fabric 파일, NeoForge·Forge는 각 전용 파일로 배포합니다. 플랫폼 표시와 실제 JAR 메타데이터를 대조합니다.
 - NeoForge 26.2용 메타데이터는 `iconFile`을 사용하고, 사용 중단된 `logoFile`이 다시 포함되지 않도록 패키지 검사로 차단합니다.
 - `custom.hangul:tested_game_versions`는 Mojang 버전 ID, `depends.minecraft`는 Fabric 정규화 버전으로 작성합니다. 두 목록의 일치 검사가 통과해야 합니다.
 - `build/libs`의 배포 JAR을 열어 소스, 로그, 캐시, 테스트 클래스, 로컬 경로가 포함되지 않았는지 확인합니다.
-- Minecraft 26.2 개발 클라이언트에서 믹스인 오류 없이 메뉴에 진입하는지 확인합니다.
+- 새로 추가한 게임 대상에서 믹스인 오류 없이 메뉴에 진입하는지 확인합니다. 실행 코드 변경 시에는 26.2 기준 클라이언트도 검사합니다.
 - Forge JAR과 검사 전용 JAR에 유효한 `pack.mcmeta`가 있어야 합니다. 선언한 모든 게임 버전에서 클라이언트 리소스·서버 데이터 형식 파서 검사를 통과해야 합니다.
 - Forge 시작 경고가 있으면 배포를 중단합니다. 경고 표시를 끄거나 메뉴로 넘어간 것만으로 통과 처리하지 않습니다. 별도 로컬 월드에서 블록 드롭, 리소스 재로딩, 저장·종료까지 검사합니다.
 - 실제 설치 폴더에는 `hangul` 또는 이전 별칭 `hangeul`의 활성 JAR이 합계 하나만 있어야 합니다.

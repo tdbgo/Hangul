@@ -36,7 +36,7 @@ jobs:
       - name: capture build artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: release-artifacts
+          name: verified-fabric
           path: build/libs/
           if-no-files-found: error
 
@@ -54,11 +54,13 @@ jobs:
           - {minecraft: '26.3-pre-2', os: windows-2025, loader: '0.19.5'}
           - {minecraft: '26.3', os: windows-2025, loader: '0.19.5'}
           - {minecraft: '26.4-snapshot-1', os: windows-2025, loader: '0.19.5'}
+          - {minecraft: '26.4-snapshot-2', os: windows-2025, loader: '0.19.5'}
           - {minecraft: '26.2', os: ubuntu-24.04, loader: '0.19.3'}
           - {minecraft: '26.1', os: ubuntu-24.04, loader: '0.19.3'}
           - {minecraft: '26.3-pre-2', os: ubuntu-24.04, loader: '0.19.3'}
           - {minecraft: '26.3', os: ubuntu-24.04, loader: '0.19.3'}
           - {minecraft: '26.4-snapshot-1', os: ubuntu-24.04, loader: '0.19.3'}
+          - {minecraft: '26.4-snapshot-2', os: ubuntu-24.04, loader: '0.19.3'}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
@@ -96,7 +98,7 @@ jobs:
         run: ./gradlew.bat -Pplatform=${{ matrix.platform }} :${{ matrix.platform }}:clean :${{ matrix.platform }}:build --no-daemon
       - uses: actions/upload-artifact@v7
         with:
-          name: release-${{ matrix.platform }}
+          name: verified-${{ matrix.platform }}
           path: platforms/${{ matrix.platform }}/build/libs/
           if-no-files-found: error
       - name: Verify same candidate against declared loader versions
@@ -121,6 +123,8 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/download-artifact@v8
         with:
-          pattern: release-*
+          pattern: verified-*
       - name: Check platform packaging and shared classes
-        run: python3 scripts/verify-artifacts.py release-artifacts/*-fabric.jar release-neoforge/*-neoforge.jar release-forge/*-forge.jar
+        run: python3 scripts/verify-artifacts.py verified-fabric/*-fabric.jar verified-neoforge/*-neoforge.jar verified-forge/*-forge.jar
+      - name: Check release scope regression tests
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'

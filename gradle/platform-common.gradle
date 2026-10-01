@@ -1,4 +1,4 @@
-version = rootProject.version
+version = rootProject.property("${project.name}_mod_version")
 group = rootProject.group
 base { archivesName = 'hangul' }
 java {
