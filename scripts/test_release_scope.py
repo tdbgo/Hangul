@@ -74,6 +74,38 @@ class ReleaseScopeTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "duplicate"):
             release.validate_scope([new, new], self.previous, self.versions)
 
+    def test_archive_order_and_text_line_endings_ignored(self):
+        old = self.jar("fabric", "old", ["26.2"], previous=True)
+        with ZipFile(old, "a") as archive:
+            archive.writestr("LICENSE_hangul", "license\r\n")
+            archive.writestr("META-INF/MANIFEST.MF", "Manifest-Version: 1.0\r\nFabric-Loom-Client-Only-Entries: b;a\r\n")
+        new = self.root / "hangul-new-fabric.jar"
+        with ZipFile(new, "w") as archive:
+            archive.writestr("META-INF/MANIFEST.MF", "Fabric-Loom-Client-Only-Entries: a;b\nManifest-Version: 1.0\n")
+            archive.writestr("LICENSE_hangul", "license\n")
+            archive.writestr("kr/playcity/hangul/Example.class", b"shared-class")
+            archive.writestr("fabric.mod.json", json.dumps({"version": "new", "depends": {"minecraft": ["26.2"]}, "id": "hangul"}))
+        with self.assertRaisesRegex(ValueError, "unchanged"):
+            release.validate_scope([new], self.previous, self.versions)
+
+    def test_required_resource_change_accepted(self):
+        old = self.jar("fabric", "old", ["26.2"], previous=True)
+        new = self.jar("fabric", "new", ["26.2"])
+        with ZipFile(old, "a") as archive:
+            archive.writestr("assets/hangul/icon.png", b"old-icon")
+        with ZipFile(new, "a") as archive:
+            archive.writestr("assets/hangul/icon.png", b"new-icon")
+        release.validate_scope([new], self.previous, self.versions)
+
+    def test_wrong_platform_version_rejected(self):
+        new = self.jar("fabric", "wrong", ["26.2"])
+        with self.assertRaisesRegex(ValueError, "artifact version"):
+            release.validate_scope([new], self.previous, self.versions)
+
+    def test_empty_release_selection_rejected(self):
+        with self.assertRaisesRegex(ValueError, "No platform"):
+            release.validate_scope([], self.previous, dict(self.versions, mod_version="unselected"))
+
 
 if __name__ == "__main__":
     unittest.main()

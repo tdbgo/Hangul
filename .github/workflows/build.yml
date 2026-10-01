@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       minecraft-versions: ${{ steps.matrix.outputs.versions }}
+      release-platforms: ${{ steps.matrix.outputs.platforms }}
     steps:
       - name: checkout repository
         uses: actions/checkout@v6
@@ -26,7 +27,13 @@ jobs:
       - name: Read declared compatibility matrix
         id: matrix
         run: |
-          node -e 'const fs = require("node:fs"); const mod = JSON.parse(fs.readFileSync("src/main/resources/fabric.mod.json", "utf8")); fs.appendFileSync(process.env.GITHUB_OUTPUT, "versions=" + JSON.stringify(mod.custom["hangul:tested_game_versions"]) + "\n");'
+          node <<'NODE'
+          const fs = require('node:fs');
+          const mod = JSON.parse(fs.readFileSync('src/main/resources/fabric.mod.json', 'utf8'));
+          const properties = Object.fromEntries(fs.readFileSync('gradle.properties', 'utf8').split(/\r?\n/).filter(line => line.includes('=') && !line.startsWith('#')).map(line => { const index = line.indexOf('='); return [line.slice(0, index), line.slice(index + 1)]; }));
+          const platforms = ['fabric', 'neoforge', 'forge'].filter(platform => properties[platform + '_mod_version'] === properties.mod_version);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'versions=' + JSON.stringify(mod.custom['hangul:tested_game_versions']) + '\nplatforms=' + JSON.stringify(platforms) + '\n');
+          NODE
       - name: Share exact candidate with compatibility jobs
         uses: actions/upload-artifact@v7
         with:
@@ -82,7 +89,9 @@ jobs:
           fi
 
   platform-build:
+    needs: build
     runs-on: windows-2025
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -102,6 +111,7 @@ jobs:
           path: platforms/${{ matrix.platform }}/build/libs/
           if-no-files-found: error
       - name: Verify same candidate against declared loader versions
+        if: github.event_name == 'pull_request' || contains(fromJSON(needs.build.outputs.release-platforms), matrix.platform)
         shell: pwsh
         run: |
           $platform = '${{ matrix.platform }}'
