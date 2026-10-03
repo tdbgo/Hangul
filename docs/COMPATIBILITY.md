@@ -10,6 +10,8 @@ The shared code adds a small optional REI adapter. It applies only when REI's wi
 
 All three candidate files have material changes: shared adapter code, Forge 26.3 metadata and pack range, and the additional NeoForge loader predicate. This does not change the policy against republishing unchanged files. The [readiness record](RELEASE_READINESS.md) controls publication; previous native results are not claimed for these new hashes.
 
+The final Windows run passed all 55 exact game/loader combinations: 38 Fabric/Quilt pairs, six minimum-Fabric checks, six NeoForge pairs and five Forge pairs. Each run checked the immutable candidate hash, 13 transformed game classes, 42 hooks, input backends and widget behavior. Three real-REI profiles also passed, including unchanged-frame caching and visual-scroll restoration. IMBlocker 7.3.2 failed in all three profiles both with and without Hangul; those six reproduced failures are not counted as compatible combinations. Native IME and graphics validation of the new REI widget and Forge 26.3 remain outstanding.
+
 ## Minecraft 26.4 Snapshot 2: 1.3.0-beta.9
 
 As of 2026-10-01, the latest 26.4 preview is [Snapshot 2](https://www.minecraft.net/en-us/article/minecraft-26-4-snapshot-2), released on September 29. Beta.9 adds exactly that version to the Fabric/Quilt descriptor (`26.4-alpha.2` in Fabric's normalization). The compilation baseline remains 26.2; production input and search code is unchanged. Future snapshots and stable 26.4 are not declared.
