@@ -52,7 +52,7 @@ minecraft {
 		}
 	}
 }
-jar { manifest { attributes 'MixinConfigs': 'hangul.client.mixins.json' } }
+jar { manifest { attributes 'MixinConfigs': 'hangul.client.mixins.json,hangul.compat.mixins.json' } }
 // Forge's upstream Mixin 0.8.7 recognizes JAVA_21, not JAVA_25. The shared
 // code uses Java 21 language features; Minecraft still requires a Java 25 VM.
 tasks.withType(JavaCompile).configureEach { options.release = 21 }
@@ -62,12 +62,13 @@ configurations.configureEach {
 	}
 }
 processResources {
-	exclude 'hangul.client.mixins.json'
+	exclude 'hangul.client.mixins.json', 'hangul.compat.mixins.json'
 }
 tasks.register('prepareForgeMixinConfig', Copy) {
 	inputs.property 'compatibilityLevel', 'JAVA_21'
 	inputs.property 'minVersion', '0.8.7'
-	from(rootProject.file('src/client/resources/hangul.client.mixins.json')) {
+	from(rootProject.file('src/client/resources')) {
+		include 'hangul.client.mixins.json', 'hangul.compat.mixins.json'
 		filter { line -> line.replace('JAVA_25', 'JAVA_21').replace('"required": true,', '"required": true, "minVersion": "0.8.7",') }
 	}
 	into layout.buildDirectory.dir('forge-mixin')

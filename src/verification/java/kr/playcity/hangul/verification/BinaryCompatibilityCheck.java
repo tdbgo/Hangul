@@ -85,18 +85,33 @@ public final class BinaryCompatibilityCheck {
 
 	private void verifyClass(final ClassNode mod) throws Exception {
 		String target = null;
+		boolean pseudo = annotations(mod.visibleAnnotations, mod.invisibleAnnotations).stream()
+			.anyMatch(annotation -> annotation.desc.endsWith("/Pseudo;"));
+		boolean external = false;
 		for (var annotation : annotations(mod.visibleAnnotations, mod.invisibleAnnotations)) {
 			if (annotation.desc.endsWith("/Mixin;")) {
-				target = ((Type) list(value(annotation, "value")).getFirst()).getInternalName();
+				var types = list(value(annotation, "value"));
+				if (!types.isEmpty()) target = ((Type) types.getFirst()).getInternalName();
+				else {
+					var targets = list(value(annotation, "targets"));
+					var optionalTargets = Map.of(
+						"kr/playcity/hangul/compat/ReiTextFieldMixin", "me/shedaniel/rei/impl/client/gui/widget/basewidgets/TextFieldWidget",
+						"kr/playcity/hangul/compat/ReiWidgetAccessor", "me/shedaniel/rei/api/client/gui/widgets/Widget");
+					check(pseudo && targets.size() == 1 && optionalTargets.containsKey(mod.name),
+						"Only the known optional REI adapter may defer target checks");
+					target = targets.isEmpty() ? null : targets.getFirst().toString().replace('.', '/');
+					check(target != null && target.equals(optionalTargets.get(mod.name)), "Optional REI target");
+					external = true;
+				}
 			}
 		}
 		ClassNode gameTarget = target == null ? null : node(target);
-		if (target != null) {
+		if (target != null && !external) {
 			check(gameTarget != null, "Mixin target " + target);
 		}
 		for (var field : mod.fields) {
 			for (var annotation : annotations(field.visibleAnnotations, field.invisibleAnnotations)) {
-				if (annotation.desc.endsWith("/Shadow;")) {
+				if (annotation.desc.endsWith("/Shadow;") && !external) {
 					check(member(target, field.name, field.desc, false), "Shadow " + target + "." + field.name);
 				}
 			}
@@ -111,6 +126,9 @@ public final class BinaryCompatibilityCheck {
 				}
 			}
 			for (var annotation : annotations(method.visibleAnnotations, method.invisibleAnnotations)) {
+				// Actual REI JAR profiles apply and exercise these hooks separately.
+				// Minecraft method/field references above are still checked for every class.
+				if (external) continue;
 				if (annotation.desc.endsWith("/Shadow;")) {
 					check(member(target, method.name, method.desc, true), "Shadow method " + target + "." + method.name);
 				}

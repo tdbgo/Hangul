@@ -10,7 +10,7 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 
 [Modrinth에서 다운로드](https://modrinth.com/mod/hangul) · [소스 코드](https://github.com/tdbgo/Hangul) · [문제 신고](https://github.com/tdbgo/Hangul/issues)
 
-`1.3.0-beta.9`는 Minecraft 26.4 Snapshot 2를 Fabric·Quilt 시험 지원 대상에 추가합니다. NeoForge와 Forge는 변경이 없어 `1.3.0-beta.8`을 계속 사용합니다. 26.4 후속 스냅샷과 정식판의 호환성을 미리 선언하지 않습니다. 로더별 검증 범위는 [호환성 문서](docs/COMPATIBILITY.md)에 정리합니다.
+개발 중인 `1.3.0-beta.10`에서는 Forge 26.3, NeoForge 26.3.0.43-beta와 REI 자체 입력창의 인라인 조합을 다룹니다. 아직 게시하지 않은 후보이며, 자동 검사와 실제 입력기 확인 범위는 [호환성 문서](docs/COMPATIBILITY.md)에 정리합니다. 아래 표는 현재 공개된 파일을 안내합니다. 26.4 후속 스냅샷과 정식판의 호환성을 미리 선언하지 않습니다.
 
 | 로더 | 최신 파일 버전 | 지원 범위 |
 | --- | --- | --- |
@@ -123,6 +123,10 @@ NeoForge는 기본적으로 게임 소스를 디컴파일·재컴파일하지 �
 ## 현재 범위
 
 바닐라의 단일행 `EditBox`, 다중행 `MultiLineEditBox`, 표지판 전용 `TextFieldHelper` 경로를 지원합니다. 따라서 채팅, 명령어, 명령어 블록, 서버 주소, 책과 깃펜, 표지판에서 동작합니다. 자체 텍스트 위젯을 구현한 외부 모드는 별도 어댑터가 필요할 수 있습니다.
+
+beta.10 후보에는 REI 26.2.820·26.3.823의 텍스트 위젯용 어댑터가 포함됩니다. REI가 없으면 적용하지 않으며, REI나 그 API를 Hangul의 필수 의존성으로 추가하지 않습니다. 이 입력창에서는 조합 문자열을 표시만 하고, 검색 결과 갱신은 REI의 기존 확정 입력 경로를 따릅니다. F6 비상 모드나 바닐라 초성 검색 확장을 REI에 제공하는 것은 아닙니다.
+
+IMBlocker 7.3.2의 동시 설치는 권장하지 않습니다. 자동 검사에서 Hangul 없이도 외부 모드의 화면 전환 Mixin 오류가 재현되었습니다. EMI는 현재 Hangul이 지원하는 26.x용 공식 배포본이 없어 지원 대상에 넣지 않습니다. 자세한 조합과 재현 방법은 [외부 모드 호환성 문서](docs/MOD_COMPATIBILITY.md)를 참고해 주세요.
 
 ## 한자 변환
 

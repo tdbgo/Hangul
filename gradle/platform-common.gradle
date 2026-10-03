@@ -1,6 +1,10 @@
 version = rootProject.property("${project.name}_mod_version")
 group = rootProject.group
 base { archivesName = 'hangul' }
+repositories { maven { url = 'https://maven.shedaniel.me/' } }
+dependencies {
+	compileOnly('me.shedaniel.cloth:basic-math:0.6.1') { transitive = false }
+}
 java {
 	toolchain.languageVersion = JavaLanguageVersion.of(25)
 	withSourcesJar()

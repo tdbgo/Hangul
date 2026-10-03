@@ -2,6 +2,14 @@
 
 Hangul shares its input and search sources across loaders. The Fabric JAR also runs on Quilt; NeoForge and Forge have separate JARs. No separate API mod, compatibility bridge or native library is required. Stable 26.2 remains the compilation target. The compatibility gate checks each exact platform JAR on the declared loader/version combinations.
 
+## beta.10 candidate: Forge 26.3 and optional REI widgets
+
+The unpublished beta.10 candidate adds Forge `26.3-66.0.9` and NeoForge `26.3.0.43-beta` to the exact matrix. Existing NeoForge pairs, including `26.3.0.3-beta`, remain declared. Forge's pack-format range now covers 26.3 client resources and server data through `[121, 0]`. Compilation still uses 26.2 and no replacement loader or native library is bundled.
+
+The shared code adds a small optional REI adapter. It applies only when REI's widget signatures match, and yields that optional widget to IMBlocker when installed. It is not an EMI adapter, a general compatibility bridge, or a replacement for REI's search engine. [Optional-mod profiles](MOD_COMPATIBILITY.md) pin actual public artifacts and distinguish loader application from native IME observations.
+
+All three candidate files have material changes: shared adapter code, Forge 26.3 metadata and pack range, and the additional NeoForge loader predicate. This does not change the policy against republishing unchanged files. The [readiness record](RELEASE_READINESS.md) controls publication; previous native results are not claimed for these new hashes.
+
 ## Minecraft 26.4 Snapshot 2: 1.3.0-beta.9
 
 As of 2026-10-01, the latest 26.4 preview is [Snapshot 2](https://www.minecraft.net/en-us/article/minecraft-26-4-snapshot-2), released on September 29. Beta.9 adds exactly that version to the Fabric/Quilt descriptor (`26.4-alpha.2` in Fabric's normalization). The compilation baseline remains 26.2; production input and search code is unchanged. Future snapshots and stable 26.4 are not declared.

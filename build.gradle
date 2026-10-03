@@ -12,6 +12,7 @@ base {
 
 repositories {
 	maven { url = 'https://maven.quiltmc.org/repository/release/' }
+	maven { url = 'https://maven.shedaniel.me/' }
 	// Add repositories to retrieve artifacts from in here.
 	// You should only use this when depending on other mods because
 	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
@@ -36,6 +37,8 @@ dependencies {
 	// Keep annotation bytecode compatible with the minimum supported Loader.
 	compileOnly "net.fabricmc:fabric-loader:${project.loader_api_version}"
 	runtimeOnly "net.fabricmc:fabric-loader:${project.loader_version}"
+	// Type signatures for the optional REI adapter; never bundled or required at runtime.
+	clientCompileOnly('me.shedaniel.cloth:basic-math:0.6.1') { transitive = false }
 }
 
 // Loom derives compiler libraries from the minimum Loader API. Resolve the
@@ -125,6 +128,18 @@ tasks.register('verifyMixinApplication', JavaExec) {
 		workingDir runDirectory
 		systemProperty 'fabric.addMods', compatibilityJar.get().absolutePath + File.pathSeparator + fixtureJar.get().asFile.absolutePath
 		systemProperty 'hangul.verification.jar', compatibilityJar.get().absolutePath
+		if (providers.gradleProperty('compatibilityMods').isPresent()) {
+			def mods = fileTree(providers.gradleProperty('compatibilityMods').get()).matching { include '*.jar' }.files
+			if (mods.isEmpty()) throw new GradleException('Compatibility profile contains no mod JARs')
+			classpath += files(mods)
+			boolean thirdPartyOnly = providers.gradleProperty('thirdPartyOnly').map { it.toBoolean() }.getOrElse(false)
+			systemProperty 'fabric.addMods',
+				((thirdPartyOnly ? [fixtureJar.get().asFile] : [compatibilityJar.get(), fixtureJar.get().asFile]) + mods)
+					.collect { it.absolutePath }.join(File.pathSeparator)
+			systemProperty 'hangul.verification.rei', 'true'
+			systemProperty 'hangul.verification.imblocker', providers.gradleProperty('withIMBlocker').getOrElse('false')
+			systemProperty 'hangul.verification.thirdPartyOnly', thirdPartyOnly.toString()
+		}
 	}
 }
 

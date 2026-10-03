@@ -193,7 +193,7 @@ final class WidgetBehaviorCheck {
 		if (!condition) throw new AssertionError(label);
 	}
 
-	private static final class CountingFont extends Font {
+	static final class CountingFont extends Font {
 		private int measured;
 		private final StringSplitter testSplitter = new StringSplitter((codePoint, style) -> {
 			measured++;

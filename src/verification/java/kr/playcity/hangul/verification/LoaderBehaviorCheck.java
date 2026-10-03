@@ -15,6 +15,14 @@ public final class LoaderBehaviorCheck {
 
 	public static void runAndExit() {
 		try (var mod = new JarFile(System.getProperty("hangul.verification.jar"))) {
+			if (Boolean.getBoolean("hangul.verification.thirdPartyOnly")) {
+				// Isolate an upstream Mixin failure: Hangul is not present in this loader profile.
+				Class.forName("net.minecraft.client.Minecraft", false, LoaderBehaviorCheck.class.getClassLoader()).getDeclaredMethods();
+				Class.forName("me.shedaniel.rei.impl.client.gui.widget.basewidgets.TextFieldWidget", false,
+					LoaderBehaviorCheck.class.getClassLoader()).getDeclaredMethods();
+				System.out.println("THIRD_PARTY_SMOKE_OK (no Hangul loaded)");
+				System.exit(0);
+			}
 			com.google.gson.JsonObject config;
 			try (var reader = new InputStreamReader(mod.getInputStream(mod.getJarEntry("hangul.client.mixins.json")), StandardCharsets.UTF_8)) {
 				config = JsonParser.parseReader(reader).getAsJsonObject();
@@ -65,6 +73,7 @@ public final class LoaderBehaviorCheck {
 			System.out.println("MIXIN_APPLICATION_OK targets=" + targets.size() + " hooks=" + hooks);
 			InputBackendCheck.run();
 			WidgetBehaviorCheck.run();
+			if (Boolean.getBoolean("hangul.verification.rei")) OptionalWidgetBehaviorCheck.run();
 			if (mod.getJarEntry("META-INF/mods.toml") != null) {
 				verifyForgePackMetadata(mod);
 			}

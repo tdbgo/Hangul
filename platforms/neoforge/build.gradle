@@ -6,6 +6,10 @@ apply from: rootProject.file('gradle/platform-common.gradle')
 apply from: rootProject.file('gradle/verification-launch.gradle')
 def candidate = providers.gradleProperty('compatibilityJar').map { file(it) }
 	.getOrElse(tasks.jar.archiveFile.get().asFile)
+def compatibilityMods = providers.gradleProperty('compatibilityMods').map { directory ->
+	fileTree(directory).matching { include '*.jar' }.files
+}.getOrElse([])
+def thirdPartyOnly = providers.gradleProperty('thirdPartyOnly').map { it.toBoolean() }.getOrElse(false)
 neoForge {
 	enable {
 		version = project.neo_version
@@ -31,11 +35,17 @@ neoForge {
 			systemProperty 'java.awt.headless', 'true'
 			systemProperty 'mixin.debug.countInjections', 'true'
 			systemProperty 'hangul.verification.jar', candidate.absolutePath
+			if (!compatibilityMods.isEmpty()) {
+				systemProperty 'hangul.verification.rei', 'true'
+				systemProperty 'hangul.verification.imblocker', providers.gradleProperty('withIMBlocker').getOrElse('false')
+				systemProperty 'hangul.verification.thirdPartyOnly', thirdPartyOnly.toString()
+			}
 		}
 	}
 }
 dependencies {
-	verificationRuntimeOnly files(candidate)
+	if (!thirdPartyOnly) verificationRuntimeOnly files(candidate)
+	verificationRuntimeOnly files(compatibilityMods)
 }
 tasks.named('runVerification') {
 	if (!providers.gradleProperty('compatibilityJar').isPresent()) { dependsOn jar }

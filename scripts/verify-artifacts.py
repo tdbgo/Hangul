@@ -27,19 +27,26 @@ def verify(path: Path, loader: str) -> tuple[set[str], str]:
         assert config["required"] and len(config["client"]) == 14
         assert not config.get("mixins") and not config.get("server"), "Client hooks must remain client-only"
         assert config["compatibilityLevel"] == ("JAVA_21" if loader == "forge" else "JAVA_25")
+        optional = json.loads(archive.read("hangul.compat.mixins.json"))
+        assert optional["required"] and optional["client"] == ["ReiWidgetAccessor", "ReiTextFieldMixin"]
+        assert optional["plugin"] == "kr.playcity.hangul.compat.OptionalCompatibilityPlugin"
+        assert optional["compatibilityLevel"] == config["compatibilityLevel"]
+        assert not optional.get("mixins") and not optional.get("server")
         if loader == "forge":
             assert config["minVersion"] == "0.8.7"
+            assert optional["minVersion"] == "0.8.7"
             assert "pack.mcmeta" in names, "Forge artifact is missing pack.mcmeta"
             pack = json.loads(archive.read("pack.mcmeta"))["pack"]
             assert pack["description"] == "Hangul resources"
-            # One pack is parsed for both resource (84–88) and data (101.1–107.1) formats.
-            assert pack["min_format"] == [84, 0] and pack["max_format"] == [107, 1]
+            # One pack covers both resource and data formats through Minecraft 26.3.
+            assert pack["min_format"] == [84, 0] and pack["max_format"] == [121, 0]
         metadata = archive.read(metadata_paths[loader]).decode("utf-8")
         assert "${" not in metadata, "Unexpanded version"
         if loader == "fabric":
             mod = json.loads(metadata)
             assert mod["environment"] == "client" and mod["id"] == "hangul"
             assert set(mod["depends"]) == {"fabricloader", "minecraft", "java"}
+            assert {item["config"] for item in mod["mixins"]} == {"hangul.client.mixins.json", "hangul.compat.mixins.json"}
             version = mod["version"]
         else:
             mod = tomllib.loads(metadata)
@@ -48,14 +55,16 @@ def verify(path: Path, loader: str) -> tuple[set[str], str]:
             version = mod["mods"][0]["version"]
             matrix = json.loads((Path(__file__).resolve().parents[1] / "platform-matrix.json").read_text())[loader]
             required = {item["modId"]: item["versionRange"] for item in mod["dependencies"]["hangul"]}
-            assert required["minecraft"] == ",".join(f"[{item['minecraft']}]" for item in matrix)
+            games = dict.fromkeys(item["minecraft"] for item in matrix)
+            assert required["minecraft"] == ",".join(f"[{game}]" for game in games)
             loader_versions = [item["loader"] if loader == "neoforge" else item["loader"].split("-", 1)[1] for item in matrix]
             assert required[loader] == ",".join(f"[{item}]" for item in loader_versions)
             if loader == "forge":
                 assert mod["clientSideOnly"]
-                assert b"MixinConfigs: hangul.client.mixins.json" in archive.read("META-INF/MANIFEST.MF")
+                manifest = archive.read("META-INF/MANIFEST.MF").replace(b"\r\n ", b"")
+                assert b"MixinConfigs: hangul.client.mixins.json,hangul.compat.mixins.json" in manifest
             else:
-                assert mod["mixins"][0]["config"] == "hangul.client.mixins.json"
+                assert {item["config"] for item in mod["mixins"]} == {"hangul.client.mixins.json", "hangul.compat.mixins.json"}
                 assert "logoFile" not in mod and all("logoFile" not in item for item in mod["mods"]), "Deprecated NeoForge logoFile"
                 assert mod["mods"][0]["iconFile"] == "assets/hangul/icon.png"
         classes = {name for name in names if name.endswith(".class")}

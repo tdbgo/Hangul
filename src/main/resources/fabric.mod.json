@@ -32,6 +32,10 @@
 		{
 			"config": "hangul.client.mixins.json",
 			"environment": "client"
+		},
+		{
+			"config": "hangul.compat.mixins.json",
+			"environment": "client"
 		}
 	],
 	"depends": {
