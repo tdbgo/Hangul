@@ -15,6 +15,7 @@ final class InputKeyCompat {
 	static final int KEY_BACKSPACE = constant("KEY_BACKSPACE", 259);
 	static final int KEY_CAPS_LOCK = constant("KEY_CAPSLOCK", 280);
 	static final int KEY_F6 = constant("KEY_F6", 295);
+	static final int KEY_F7 = constant("KEY_F7", 296);
 	static final int KEY_LEFT_SHIFT = constant("KEY_LSHIFT", 340);
 	static final int KEY_RIGHT_SHIFT = constant("KEY_RSHIFT", 344);
 	static final int MOD_SUPER = constant("MOD_SUPER", 8);

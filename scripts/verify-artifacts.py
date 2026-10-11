@@ -24,7 +24,7 @@ def verify(path: Path, loader: str) -> tuple[set[str], str]:
         assert "assets/hangul/icon.png" in names
         assert not any("verification" in name or name.endswith((".dll", ".jar", ".log")) for name in names)
         config = json.loads(archive.read("hangul.client.mixins.json"))
-        assert config["required"] and len(config["client"]) == 14
+        assert config["required"] and len(config["client"]) == 15
         assert not config.get("mixins") and not config.get("server"), "Client hooks must remain client-only"
         assert config["compatibilityLevel"] == ("JAVA_21" if loader == "forge" else "JAVA_25")
         optional = json.loads(archive.read("hangul.compat.mixins.json"))

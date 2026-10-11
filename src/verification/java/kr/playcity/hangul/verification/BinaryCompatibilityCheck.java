@@ -51,7 +51,7 @@ public final class BinaryCompatibilityCheck {
 			}
 			check.check(check.screenHooks == 1, "Expected one screen-lifecycle hook, found " + check.screenHooks);
 			var keys = check.node("com/mojang/blaze3d/platform/InputConstants");
-			var required = new ArrayList<>(List.of("PRESS", "KEY_BACKSPACE", "KEY_CAPSLOCK", "KEY_F6", "KEY_LSHIFT", "KEY_RSHIFT", "MOD_SUPER"));
+			var required = new ArrayList<>(List.of("PRESS", "KEY_BACKSPACE", "KEY_CAPSLOCK", "KEY_F6", "KEY_F7", "KEY_LSHIFT", "KEY_RSHIFT", "MOD_SUPER"));
 			for (char key = 'A'; key <= 'Z'; key++) {
 				required.add("KEY_" + key);
 			}

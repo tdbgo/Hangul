@@ -16,7 +16,8 @@
 		"MultiLineEditBoxMixin",
 		"MultilineTextFieldAccessor",
 		"RecipeBookComponentMixin",
-		"SearchTreeMixin"
+		"SearchTreeMixin",
+		"TextInputManagerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

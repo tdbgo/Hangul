@@ -11,7 +11,7 @@ final class InputBackendCheck {
 		Class<?> compat = Class.forName("kr.playcity.hangul.InputKeyCompat");
 		String[][] constants = {
 			{"ACTION_PRESS", "PRESS"}, {"KEY_BACKSPACE", "KEY_BACKSPACE"},
-			{"KEY_CAPS_LOCK", "KEY_CAPSLOCK"}, {"KEY_F6", "KEY_F6"},
+			{"KEY_CAPS_LOCK", "KEY_CAPSLOCK"}, {"KEY_F6", "KEY_F6"}, {"KEY_F7", "KEY_F7"},
 			{"KEY_LEFT_SHIFT", "KEY_LSHIFT"}, {"KEY_RIGHT_SHIFT", "KEY_RSHIFT"},
 			{"MOD_SUPER", "MOD_SUPER"}
 		};

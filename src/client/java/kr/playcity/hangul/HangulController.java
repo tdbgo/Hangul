@@ -92,7 +92,7 @@ public final class HangulController {
 		}
 
 		int codePoint = event.codepoint();
-		if (isLatinLetter(codePoint) || isHangul(codePoint)) {
+		if (isLatinLetter(ImeWidthPolicy.halfWidthLatin(codePoint)) || isHangul(codePoint)) {
 			return true;
 		}
 

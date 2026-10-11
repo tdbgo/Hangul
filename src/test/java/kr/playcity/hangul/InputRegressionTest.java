@@ -5,6 +5,7 @@ import java.util.List;
 /** Regression coverage for search, widget ownership, and composition cache boundaries. */
 final class InputRegressionTest {
 	static void run() {
+		ImeWidthTest.run();
 		for (String[] example : new String[][] {{"Rk", "까"}, {"zO", "컈"}, {"Tho", "쐐"}, {"rP", "계"}}) {
 			List<String> actual = KoreanSearch.search(
 				query -> List.of("가", "까", "캐", "컈", "쐐", "계").stream()

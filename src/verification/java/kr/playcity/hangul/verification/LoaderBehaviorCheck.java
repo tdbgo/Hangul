@@ -72,6 +72,7 @@ public final class LoaderBehaviorCheck {
 			}
 			System.out.println("MIXIN_APPLICATION_OK targets=" + targets.size() + " hooks=" + hooks);
 			InputBackendCheck.run();
+			ImeWidthBehaviorCheck.run();
 			WidgetBehaviorCheck.run();
 			if (Boolean.getBoolean("hangul.verification.rei")) OptionalWidgetBehaviorCheck.run();
 			if (mod.getJarEntry("META-INF/mods.toml") != null) {
