@@ -1,8 +1,18 @@
 # Compatibility policy
 
-Hangul shares its input and search sources across loaders. The Fabric JAR also runs on Quilt; NeoForge and Forge have separate JARs. No separate API mod, compatibility bridge or native library is required. Stable 26.2 remains the compilation target. The compatibility gate checks each exact platform JAR on the declared loader/version combinations.
+Hangul shares its input and search sources across loaders. The Fabric JAR also runs on Quilt; NeoForge and Forge have separate JARs. No separate API mod, compatibility bridge or additional native library is required. Stable 26.2 remains the compilation target. The compatibility gate checks each exact platform JAR on the declared loader/version combinations.
 
-## beta.10 candidate: Forge 26.3 and optional REI widgets
+## Current beta.10 candidate: Snapshot 3 and Windows width controls
+
+As of 2026-10-11, the unpublished candidate adds exactly Minecraft `26.4-snapshot-3` (`26.4-alpha.3`) to Fabric/Quilt. Later snapshots and stable 26.4 are not declared. NeoForge adds `26.1.2.116`, `26.2.0.90` and `26.3.0.69-beta`; Forge adds `26.3-66.0.10`. Previously declared loader pairs remain in the matrix. The 26.2 compilation baseline and existing runtime dependencies are unchanged.
+
+The candidate now includes optional Windows controls for full-width Latin input: F7 attempts a one-time half-width repair, and Shift+F7 toggles persistence. Automatic handling is off by default and limited to newly committed full-width Latin letters and digits in Korean IME English mode. Composition, candidates, other languages and clipboard content are not normalized. See [IME width controls](IME_WIDTH.md) for the eligibility checks and native-test limits.
+
+Release staging now requires changed runtime class bytes for every selected platform. Version, game targets, loader predicates, icons or other resources alone do not justify uploading a new file. This candidate has shared runtime changes; the [readiness record](RELEASE_READINESS.md) identifies the final artifacts and outstanding checks. The dated results below refer to earlier hashes, not the current candidate.
+
+The final Windows matrix passed 62 distinct combinations: 20 Fabric, 20 Quilt, seven minimum-Fabric checks, nine NeoForge pairs and six Forge pairs. Four repeated baseline checks produced 66 successful executions in total. Every execution verified 14 transformed game classes, 44 hooks, widget behavior and the guarded width-event logic, with candidate hash receipts. Win32 bindings were checked read-only; native IME recovery, candidate geometry and graphics were not tested by this matrix.
+
+## 2026-10-03 beta.10 candidate: Forge 26.3 and optional REI widgets
 
 The unpublished beta.10 candidate adds Forge `26.3-66.0.9` and NeoForge `26.3.0.43-beta` to the exact matrix. Existing NeoForge pairs, including `26.3.0.3-beta`, remain declared. Forge's pack-format range now covers 26.3 client resources and server data through `[121, 0]`. Compilation still uses 26.2 and no replacement loader or native library is bundled.
 

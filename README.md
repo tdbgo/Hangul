@@ -10,7 +10,7 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 
 [Modrinth에서 다운로드](https://modrinth.com/mod/hangul) · [소스 코드](https://github.com/tdbgo/Hangul) · [문제 신고](https://github.com/tdbgo/Hangul/issues)
 
-개발 중인 `1.3.0-beta.10`에서는 Forge 26.3, NeoForge 26.3.0.43-beta와 REI 자체 입력창의 인라인 조합을 다룹니다. 아직 게시하지 않은 후보이며, 자동 검사와 실제 입력기 확인 범위는 [호환성 문서](docs/COMPATIBILITY.md)에 정리합니다. 아래 표는 현재 공개된 파일을 안내합니다. 26.4 후속 스냅샷과 정식판의 호환성을 미리 선언하지 않습니다.
+개발 중인 `1.3.0-beta.10`에는 Windows 전각 영문 대응 옵션, REI 입력창의 인라인 조합과 새 버전 호환성 작업이 포함됩니다. 26.4 Snapshot 3과 최신 NeoForge·Forge의 자동 호환성 검사를 통과했습니다. 아직 게시하지 않은 후보이며, 완료된 검사와 실제 입력기 확인 범위는 [배포 준비 상태](docs/RELEASE_READINESS.md)에 정리합니다. 아래 표는 현재 공개된 파일을 안내합니다. 후보의 지원 범위가 기존 공개 파일에 소급 적용되지는 않습니다.
 
 | 로더 | 최신 파일 버전 | 지원 범위 |
 | --- | --- | --- |
@@ -18,7 +18,7 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 | NeoForge | 1.3.0-beta.8 | 26.1, 26.1.1, 26.1.2, 26.2, 26.3 |
 | Forge | 1.3.0-beta.8 | 26.1, 26.1.1, 26.1.2, 26.2 |
 
-모든 로더가 같은 릴리스 번호를 가질 필요는 없습니다. 기능·지원 범위·필수 메타데이터가 달라진 파일만 새로 배포합니다.
+모든 로더가 같은 릴리스 번호를 가질 필요는 없습니다. 실행 코드가 달라진 파일만 새로 배포합니다. 버전 번호·지원 선언·리소스만 바뀐 파일은 새로 올리지 않으며, 지원 선언은 다음 코드 업데이트에 함께 반영합니다.
 
 ## 기본 사용법
 
@@ -29,6 +29,14 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 3. 조합 중인 글자가 커서 위치에 즉시 표시되고, 확정되면 정상 입력값으로 들어갑니다.
 
 `F6`은 OS IME가 고장 난 환경에서 단일행 입력창에만 쓰는 비상용 **강제 한글 모드**입니다. 현재 입력창에서만 적용되며, 다시 `F6`을 누르거나 다른 곳으로 포커스를 옮기거나 화면을 닫으면 **자동 입력 [IME]** 모드로 돌아갑니다. 책과 표지판은 기본 OS IME 경로를 사용하고 F6 전환은 지원하지 않습니다. 오른쪽 Alt/한영키는 모드가 가로채지 않습니다.
+
+### 전각 영문 대응 — beta.10 후보
+
+Windows 한국어 입력기에서 `ａｂｃ１２３`처럼 전각 영문·숫자가 나오는 경우를 위한 선택 기능입니다. 입력창에서 `F7`로 반각 상태 복구를 요청하고, `Shift+F7`로 반각 영문 유지를 켜거나 끌 수 있습니다. 기본값은 꺼짐이며 설정은 `config/hangul.properties`에 저장합니다.
+
+한국어 IME의 영문 상태에서만 동작합니다. 조합·한자 후보 선택 중에는 건드리지 않고, 한영 상태·입력 중인 문장·커서·붙여넣기도 바꾸지 않습니다. 입력기가 상태 조회를 지원하지 않거나 다른 언어를 사용 중이라면 원래 입력을 그대로 전달합니다. 전각 문장부호·공백·일본어·중국어 문자는 일괄 변환하지 않습니다.
+
+아직 실제 간헐적 전각 전환의 재현·복구가 검증된 배포 기능은 아닙니다. 자세한 범위와 확인 방법은 [전각 입력 대응](docs/IME_WIDTH.md)을 참고해 주세요.
 
 ## 입력 구조
 
@@ -48,7 +56,7 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 - 한글 IME 조합 중인 마지막 글자까지 검색 결과에 즉시 반영
 - 한글 상태로 영문 명령어의 물리 키를 누른 경우와 `디버그` 같은 음차 명령의 Tab 추천 복구
 - F6 강제 모드에서는 독립 두벌식 조합기 사용
-- Fabric API, Mod Menu, 네이티브 라이브러리 불필요
+- Fabric API·Mod Menu 의존성, 별도 네이티브 라이브러리 설치 불필요
 - Fabric·Quilt·NeoForge·Forge용 빌드 / Java 25 이상 — 로더별 버전과 검증 수준은 [호환성 문서](docs/COMPATIBILITY.md)를 확인해 주세요.
 
 ## Hangul의 강점
@@ -58,7 +66,7 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 - **입력창 전체성:** 채팅뿐 아니라 책, 표지판, 명령어 블록과 한자 후보 위치까지 같은 원칙으로 처리합니다.
 - **한국어 탐색:** 초성, 두벌식 자판 실수, 다중 단어, 음차 명령어를 바닐라 검색 구조 위에서 지원합니다.
 - **사용자 서버 친화성:** 고정 명령어 번역표가 아니라 서버가 공개한 리터럴을 분석하므로 새 영문 명령에도 적용됩니다.
-- **작은 실행 표면:** Fabric API, Mod Menu, 네이티브 DLL과 상시 전체 목록 스캔이 없습니다.
+- **작은 실행 표면:** Fabric API·Mod Menu를 요구하지 않고, 추가 네이티브 DLL 동봉이나 상시 전체 목록 스캔이 없습니다.
 
 검색어: Minecraft 한글 입력, 한글 채팅, 초성 검색, 한글 검색, Korean input, Hangul IME, Hangeul, Korean IME
 
@@ -124,7 +132,7 @@ NeoForge는 기본적으로 게임 소스를 디컴파일·재컴파일하지 �
 
 바닐라의 단일행 `EditBox`, 다중행 `MultiLineEditBox`, 표지판 전용 `TextFieldHelper` 경로를 지원합니다. 따라서 채팅, 명령어, 명령어 블록, 서버 주소, 책과 깃펜, 표지판에서 동작합니다. 자체 텍스트 위젯을 구현한 외부 모드는 별도 어댑터가 필요할 수 있습니다.
 
-beta.10 후보에는 REI 26.2.820·26.3.823의 텍스트 위젯용 어댑터가 포함됩니다. REI가 없으면 적용하지 않으며, REI나 그 API를 Hangul의 필수 의존성으로 추가하지 않습니다. 이 입력창에서는 조합 문자열을 표시만 하고, 검색 결과 갱신은 REI의 기존 확정 입력 경로를 따릅니다. F6 비상 모드나 바닐라 초성 검색 확장을 REI에 제공하는 것은 아닙니다.
+beta.10 후보에는 REI 26.2.820·26.3.824의 텍스트 위젯용 어댑터가 포함됩니다. REI가 없으면 적용하지 않으며, REI나 그 API를 Hangul의 필수 의존성으로 추가하지 않습니다. 이 입력창에서는 조합 문자열을 표시만 하고, 검색 결과 갱신은 REI의 기존 확정 입력 경로를 따릅니다. F6 비상 모드나 바닐라 초성 검색 확장을 REI에 제공하는 것은 아닙니다.
 
 IMBlocker 7.3.2의 동시 설치는 권장하지 않습니다. 자동 검사에서 Hangul 없이도 외부 모드의 화면 전환 Mixin 오류가 재현되었습니다. EMI는 현재 Hangul이 지원하는 26.x용 공식 배포본이 없어 지원 대상에 넣지 않습니다. 자세한 조합과 재현 방법은 [외부 모드 호환성 문서](docs/MOD_COMPATIBILITY.md)를 참고해 주세요.
 
