@@ -11,7 +11,7 @@
   "fabric-26.3": {
     "minecraft": "26.3", "loader": "fabric",
     "mods": [
-      {"project": "nfn13YXA", "version": "ePn2dRJ1", "sha512": "d77b276ca5a6bbadb7ea10f6b566f8164266f1fdca929b6fd02d2228dc3f5d34376c3278a463daa1380e0972118f8a16cbb40077df64fcf936b3ad07da850af2"},
+      {"project": "nfn13YXA", "version": "rKsAE6bX", "sha512": "7724d8e8dc50248641686c878b6b60736572c49e0cd8c71640c1c57fe85aed9941cad8ff7806b923903253da3540ff3df9bf619d701f50b904990fa7cdd59ee9"},
       {"project": "9s6osm5g", "version": "fg2uyxOW", "sha512": "8924e19d41845096724fa10f3717bc51964a0edbbbcad0ff1e6c6187a398b08f356e49579a657c2dc44a7f92e3850771f3ca70bf8c1f654de60425163b91dbb1"},
       {"project": "lhGA9TYQ", "version": "gAI51C1M", "sha512": "0045da94a9e8fd48a9ed6eea8d0d981257fa38188d4b3d54c959349b16cbb13965fe4f9050c166d0cb67c1438409f10a856afa48b05430b92a5022206fffac59"},
       {"project": "P7dR8mSH", "version": "bNnaTiuM", "sha512": "ed6b2586d6fde11fde8472f5a527c51e99b67026e46f94d4bfd85e7e28ce5ee299173ee16ad576ceb51f39f98d30a811086a6deb1a86a524859cc16e12da109d"}
@@ -20,7 +20,7 @@
   "neoforge-26.3": {
     "minecraft": "26.3", "loader": "neoforge",
     "mods": [
-      {"project": "nfn13YXA", "version": "ksJMlXAk", "sha512": "14e0e425f10ff2e03fa22193ebeaad751d1bc03faf620f579357510899922e47279258b3f22083094eb38994e12abc7280d506e8f01ab290ac3e02085574d4ee"},
+      {"project": "nfn13YXA", "version": "uwE0PJmc", "sha512": "5693ec23590ce87910b0f05e0215a2597131fe8e5bb8632fb3992708ae61f1d6709db6f6c3f533d791c50fabc2a60207792b8cc8b6da52e3df1a546ddf574683"},
       {"project": "9s6osm5g", "version": "GchRXPnb", "sha512": "941dd8aab50d658cfa6da071dacd05802c7097643ad569935d0073b39231a2137f2ade2403b791f70cf5ebf1649d7b6337862568a8b340c88e5d364569f94431"},
       {"project": "lhGA9TYQ", "version": "uEV9xTeI", "sha512": "7bc322c83a350e2445530bad0d93f9e21c52eb70ae4d121e460155a6da416de14249f9f01cee90136c4b21733ee989de9f3ceea905e66761f25af2a98f4ad34b"}
     ]

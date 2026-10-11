@@ -21,7 +21,7 @@ config="hangul.compat.mixins.json"
 [[dependencies.hangul]]
 modId="neoforge"
 type="required"
-versionRange="[26.1.0.19-beta],[26.1.1.15-beta],[26.1.2.104],[26.2.0.77],[26.3.0.3-beta],[26.3.0.43-beta]"
+versionRange="[26.1.0.19-beta],[26.1.1.15-beta],[26.1.2.104],[26.1.2.116],[26.2.0.77],[26.2.0.90],[26.3.0.3-beta],[26.3.0.43-beta],[26.3.0.69-beta]"
 side="CLIENT"
 
 [[dependencies.hangul]]

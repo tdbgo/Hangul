@@ -35,10 +35,11 @@ class ReleaseScopeTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unchanged"):
             release.validate_scope([new], self.previous, self.versions)
 
-    def test_new_game_target_accepted(self):
+    def test_new_game_target_without_code_change_rejected(self):
         self.jar("fabric", "old", ["26.2"], previous=True)
         new = self.jar("fabric", "new", ["26.2", "26.4-snapshot-2"])
-        self.assertEqual([new], release.validate_scope([new], self.previous, self.versions))
+        with self.assertRaisesRegex(ValueError, "unchanged.*runtime code"):
+            release.validate_scope([new], self.previous, self.versions)
 
     def test_unchanged_unselected_platform_rejected(self):
         other = self.jar("forge", "old", [])
@@ -70,7 +71,7 @@ class ReleaseScopeTest(unittest.TestCase):
 
     def test_duplicate_platform_rejected(self):
         self.jar("fabric", "old", ["26.2"], previous=True)
-        new = self.jar("fabric", "new", ["26.3"])
+        new = self.jar("fabric", "new", ["26.3"], code=b"changed-class")
         with self.assertRaisesRegex(ValueError, "duplicate"):
             release.validate_scope([new, new], self.previous, self.versions)
 
@@ -88,14 +89,20 @@ class ReleaseScopeTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unchanged"):
             release.validate_scope([new], self.previous, self.versions)
 
-    def test_required_resource_change_accepted(self):
+    def test_resource_only_change_rejected(self):
         old = self.jar("fabric", "old", ["26.2"], previous=True)
         new = self.jar("fabric", "new", ["26.2"])
         with ZipFile(old, "a") as archive:
             archive.writestr("assets/hangul/icon.png", b"old-icon")
         with ZipFile(new, "a") as archive:
             archive.writestr("assets/hangul/icon.png", b"new-icon")
-        release.validate_scope([new], self.previous, self.versions)
+        with self.assertRaisesRegex(ValueError, "unchanged.*runtime code"):
+            release.validate_scope([new], self.previous, self.versions)
+
+    def test_game_target_with_code_change_accepted(self):
+        self.jar("fabric", "old", ["26.2"], previous=True)
+        new = self.jar("fabric", "new", ["26.2", "26.4-snapshot-3"], code=b"fixed-class")
+        self.assertEqual([new], release.validate_scope([new], self.previous, self.versions))
 
     def test_wrong_platform_version_rejected(self):
         new = self.jar("fabric", "wrong", ["26.2"])

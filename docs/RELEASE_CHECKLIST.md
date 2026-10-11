@@ -11,17 +11,24 @@
 ## 플랫폼별 배포 범위
 
 - `gradle.properties`의 `mod_version`은 이번 릴리스 번호입니다. `fabric_mod_version`, `neoforge_mod_version`, `forge_mod_version`은 각 파일의 실제 버전이며 독립적으로 유지합니다.
-- 기능·지원 게임/로더·필수 리소스나 메타데이터가 바뀐 플랫폼만 번호를 올립니다. CI·문서 수정이나 압축 시간·순서 변경만으로는 새 파일을 배포하지 않습니다.
-- 공통 실행 코드를 수정했다면 영향을 받는 모든 플랫폼의 파일을 갱신하고 검사합니다. 로더 하나의 지원 선언만 바꾼 경우에는 다른 로더의 번호를 유지합니다.
+- 실행 코드가 바뀐 플랫폼만 번호를 올립니다. 2026-10-11부터 지원 선언·리소스·버전만 바뀐 파일도 새로 배포하지 않습니다. CI·문서·압축 시간·순서만의 변경도 배포 사유가 아닙니다.
+- 공통 실행 코드를 수정했다면 영향을 받는 모든 플랫폼의 파일을 갱신하고 검사합니다. 코드 변경 없이 지원만 재검증한 경우에는 기존 공개 파일의 설치 가능 범위와 구분해 기록하고 다음 코드 업데이트에 지원 선언을 반영합니다.
 - 이번 `mod_version`과 같은 플랫폼 버전만 업로드 대상입니다. Fabric 파일은 Quilt와 공유합니다. 다른 플랫폼은 기존 공개 파일을 계속 안내합니다.
 - 이전 공개 JAR을 별도 비교 디렉토리에 내려받고 아래 게이트를 실행합니다. 비교 디렉토리에는 선택한 플랫폼당 이전 파일 하나만 둡니다.
 
 ```powershell
-python scripts/verify-artifacts.py build/libs/hangul-1.3.0-beta.9-fabric.jar
-python scripts/stage-release.py build/libs/hangul-1.3.0-beta.9-fabric.jar --previous-dir .toolchains/release-baseline --output-dir build/release/1.3.0-beta.9
+$candidateJars = @(
+    'build/libs/hangul-1.3.0-beta.10-fabric.jar',
+    'platforms/neoforge/build/libs/hangul-1.3.0-beta.10-neoforge.jar',
+    'platforms/forge/build/libs/hangul-1.3.0-beta.10-forge.jar'
+)
+python scripts/verify-artifacts.py @candidateJars
+python scripts/stage-release.py @candidateJars --previous-dir .toolchains/release-baseline-beta10 --output-dir build/release/1.3.0-beta.10
 ```
 
-게이트는 모든 클래스·리소스를 비교하되 ZIP 압축·순서·시간, 텍스트 줄바꿈과 모드 버전 필드만 정규화합니다. 버전 번호만 바뀐 JAR, 미선택 플랫폼, 이전 파일 누락, 중복·누락된 플랫폼, 배포 폴더의 잔여 파일을 거부합니다. 새 지원 버전이 들어간 메타데이터는 실제 변경으로 취급합니다. 기존 파일이 다른 내용이면 덮어쓰지 않습니다.
+위 예시는 공통 코드가 바뀐 beta.10 후보의 세 파일을 선택합니다. 특정 플랫폼만 코드가 바뀌었다면 버전 설정과 선택 목록도 그 플랫폼만 포함하도록 맞춥니다. 스테이징은 업로드가 아니며, 남은 실사용 검사와 릴리스 문구 검토를 마친 뒤 게시합니다.
+
+게이트는 전체 내용과 실행 클래스 바이트를 대조합니다. 실행 클래스가 같다면 새 지원 버전·리소스·버전이 달라져도 새 파일을 거부합니다. ZIP 구성과 텍스트 줄바꿈 차이, 미선택 플랫폼, 이전 파일 누락, 중복·누락된 플랫폼과 배포 폴더의 잔여 파일도 배포 사유로 인정하지 않습니다. 기존 파일이 다른 내용이면 덮어쓰지 않습니다.
 
 GitHub에는 게이트가 만든 폴더의 JAR과 체크섬만 올리고, Modrinth에서도 같은 JAR만 업로드합니다. 전체 CI 산출물(`verified-*`)을 일괄 배포하지 않습니다. 기존 Forge·NeoForge 릴리스는 삭제하거나 다시 올리지 않습니다.
 
@@ -72,6 +79,7 @@ CI는 모든 로더의 26.2 기준 빌드·실제 로더 적용·패키지를 �
 - 표지판의 줄 전환과 저장, 한자 후보 선택·취소
 - GUI 배율, 창 크기 변경, 전체화면 전환, 포커스 이동, Win+. 이후 입력
 - 한/영 전환과 입력창 재진입 후 의도치 않은 영문 전각 입력 여부
+- Windows 반각 옵션 변경은 [전각 영문 대응 검사](IME_WIDTH.md)의 F7 복구·설정 유지·다른 언어 보호 항목을 같은 후보 JAR로 추가 확인
 - 단일행 입력창에서 F6을 켠 뒤 닫기·다른 입력창·중첩 검색창으로 이동
 - 검색창에서 `rk`와 `Rk` 교체, 일반 영문·대문자 식별자·태그 검색
 - F3+T 리소스 재로딩 후 조합 표시와 책 줄바꿈

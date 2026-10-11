@@ -50,7 +50,8 @@ def main() -> None:
         selected.append(config["imblocker-" + profile["loader"]])
     projects = {item["project"] for item in selected}
     versions = {item["version"] for item in selected}
-    destination = ROOT / ".toolchains" / "compatibility" / (args.profile + ("-imblocker" if args.with_imblocker else ""))
+    pin_digest = hashlib.sha256(json.dumps(selected, sort_keys=True).encode()).hexdigest()[:12]
+    destination = ROOT / ".toolchains" / "compatibility" / (args.profile + ("-imblocker" if args.with_imblocker else "") + "-" + pin_digest)
     destination.mkdir(parents=True, exist_ok=True)
     expected = set()
     for pinned in selected:

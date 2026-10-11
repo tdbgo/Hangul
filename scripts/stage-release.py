@@ -1,4 +1,4 @@
-"""Stage only changed platform artifacts; reject version-only republication."""
+"""Stage only artifacts with runtime code changes; metadata-only releases are rejected."""
 import argparse
 import hashlib
 import json
@@ -81,8 +81,14 @@ def validate_scope(jars: list[Path], previous_dir: Path, versions: dict[str, str
         old_platform, old_version = identity(previous[0])
         if old_platform != platform or old_version == version:
             raise ValueError(f"Invalid previous {platform} artifact")
-        if content_fingerprint(jar) == content_fingerprint(previous[0]):
-            raise ValueError(f"Rejecting unchanged {platform} artifact: only its version or archive layout changed")
+        current_content = content_fingerprint(jar)
+        previous_content = content_fingerprint(previous[0])
+        current_code = {name: digest for name, digest in current_content.items() if name.endswith(".class")}
+        previous_code = {name: digest for name, digest in previous_content.items() if name.endswith(".class")}
+        if not current_code or not previous_code:
+            raise ValueError(f"Missing runtime code in {platform} artifact")
+        if current_code == previous_code:
+            raise ValueError(f"Rejecting unchanged {platform} runtime code: metadata, resources or version alone do not justify a new file")
     if seen != expected:
         raise ValueError(f"Missing release platforms: {sorted(expected - seen)}")
     return jars
