@@ -7,6 +7,9 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import net.minecraft.client.gui.font.TextFieldHelper;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractSignEditScreen;
 import net.minecraft.client.gui.screens.inventory.SignEditScreen;
 import net.minecraft.client.input.CharacterEvent;
@@ -16,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /** Checks transformed sign methods, not OS input delivery, rendering pixels, or world persistence. */
 final class SignBehaviorCheck {
-	static void run() throws Exception {
+	static void run(Font font) throws Exception {
 		// Skip the screen constructor: it starts native text input and requires a live world.
 		// Only the state used by the methods below is installed. This fixture is never shipped.
 		Class<?> unsafeType = Class.forName("sun.misc.Unsafe");
@@ -24,6 +27,10 @@ final class SignBehaviorCheck {
 		instance.setAccessible(true);
 		AbstractSignEditScreen screen = (AbstractSignEditScreen) unsafeType.getMethod("allocateInstance", Class.class)
 			.invoke(instance.get(null), SignEditScreen.class);
+		if (Arrays.stream(AbstractSignEditScreen.class.getDeclaredFields()).anyMatch(field -> field.getName().equals("signLines"))) {
+			checkModern(screen, font);
+			return;
+		}
 		String[] messages = {"abcd", "둘", "셋", "넷"};
 		Field line = member("line");
 		member("messages").set(screen, messages);
@@ -97,6 +104,48 @@ final class SignBehaviorCheck {
 
 	private static void update(Method method, Object screen, String text) throws Exception {
 		method.invoke(screen, new PreeditEvent(text, 1, List.of(text), 0), new CallbackInfoReturnable<Boolean>("preeditUpdated", false));
+	}
+
+	private static void checkModern(AbstractSignEditScreen screen, Font font) throws Exception {
+		Field fontField = Screen.class.getDeclaredField("font");
+		fontField.setAccessible(true);
+		fontField.set(screen, font);
+		Class<?> lineType = Class.forName(AbstractSignEditScreen.class.getName() + "$SignLineEditBox");
+		check(lineType.getSuperclass() == EditBox.class, "modern sign lines inherit EditBox");
+		var constructor = lineType.getDeclaredConstructor(AbstractSignEditScreen.class, int.class, int.class);
+		constructor.setAccessible(true);
+		String[] messages = {"abcd", "둘", "셋", "넷"};
+		member("messages").set(screen, messages);
+		EditBox line = (EditBox) constructor.newInstance(screen, 120, 10);
+		line.setValue(messages[0]);
+		int[] writes = {0};
+		line.setResponder(value -> { messages[0] = value; writes[0]++; });
+		WidgetBehaviorCheck.setField(line, "focused", true);
+		line.moveCursorTo(1, false);
+		line.moveCursorTo(3, true);
+		line.preeditUpdated(WidgetBehaviorCheck.preedit("한", 1));
+		check(writes[0] == 0 && messages[0].equals("abcd"), "modern sign preedit does not write saved text");
+		RuntimeException sentinel = new RuntimeException("intentional modern sign render interruption");
+		try {
+			WidgetBehaviorCheck.invoke(WidgetBehaviorCheck.wrapper(EditBox.class), line, args -> {
+				check(line.getValue().equals("a한d"), "modern sign inline selection");
+				throw sentinel;
+			});
+			throw new AssertionError("Expected modern sign render interruption");
+		} catch (InvocationTargetException failure) {
+			if (failure.getCause() != sentinel) throw failure;
+		}
+		check(line.getValue().equals("abcd") && line.getCursorPosition() == 3, "modern sign render restores body and cursor");
+		line.charTyped(new CharacterEvent('漢'));
+		check(messages[0].equals("a漢d") && writes[0] == 1, "modern sign Hanja commit writes exactly once");
+		line.preeditUpdated(WidgetBehaviorCheck.preedit("나", 1));
+		Method focus = Arrays.stream(EditBox.class.getDeclaredMethods())
+			.filter(method -> method.getName().contains("hangul$onFocusChanged")).findFirst().orElseThrow();
+		focus.setAccessible(true);
+		focus.invoke(line, false, new org.spongepowered.asm.mixin.injection.callback.CallbackInfo("setFocused", false));
+		WidgetBehaviorCheck.setField(line, "focused", false);
+		check(messages[0].equals("a漢d") && messages[1].equals("둘"), "modern sign focus change preserves all saved lines");
+		System.out.println("MODERN_SIGN_BEHAVIOR_OK inline composition, selection, Hanja commit, render restoration, and focus cleanup");
 	}
 
 	private static void check(boolean condition, String label) {

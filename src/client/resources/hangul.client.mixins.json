@@ -1,6 +1,7 @@
 {
 	"required": true,
 	"package": "kr.playcity.hangul.mixin",
+	"plugin": "kr.playcity.hangul.SignCompatibilityPlugin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
 		"AbstractSignEditScreenMixin",

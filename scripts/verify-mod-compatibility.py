@@ -1,6 +1,7 @@
 """Run real-loader optional-widget profiles and isolate known upstream failures."""
 import argparse
 import hashlib
+import json
 from pathlib import Path
 import re
 import subprocess
@@ -32,7 +33,10 @@ def run_profile(profile: str, candidate: Path, imblocker: bool, isolated: bool =
     if platform == "fabric":
         command += ["verifyMixinApplication", f"-Pminecraft_version={game}"]
     else:
-        command += ["-Pplatform=neoforge", ":neoforge:runVerification", "-Pneo_version=26.3.0.69-beta"]
+        matrix = json.loads((ROOT / "platform-matrix.json").read_text(encoding="utf-8"))
+        loaders = [target["loader"] for target in matrix["neoforge"] if target["minecraft"] == game]
+        require(bool(loaders), "No exact NeoForge loader declared for optional profile")
+        command += ["-Pplatform=neoforge", ":neoforge:runVerification", "-Pneo_version=" + loaders[-1]]
     if imblocker:
         command.append("-PwithIMBlocker=true")
     if isolated:

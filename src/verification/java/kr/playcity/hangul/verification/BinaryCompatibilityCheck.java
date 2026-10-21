@@ -109,6 +109,15 @@ public final class BinaryCompatibilityCheck {
 		if (target != null && !external) {
 			check(gameTarget != null, "Mixin target " + target);
 		}
+		if (mod.name.endsWith("/AbstractSignEditScreenMixin") && gameTarget != null
+			&& gameTarget.fields.stream().noneMatch(field -> field.name.equals("signField"))) {
+			var line = node(target + "$SignLineEditBox");
+			check(gameTarget.fields.stream().anyMatch(field -> field.name.equals("signLines"))
+				&& line != null && "net/minecraft/client/gui/components/EditBox".equals(line.superName),
+				"New sign layout must use the verified EditBox path");
+			return;
+		}
+		int renderAlternatives = 0, renderMatches = 0;
 		for (var field : mod.fields) {
 			for (var annotation : annotations(field.visibleAnnotations, field.invisibleAnnotations)) {
 				if (annotation.desc.endsWith("/Shadow;") && !external) {
@@ -117,6 +126,9 @@ public final class BinaryCompatibilityCheck {
 			}
 		}
 		for (var method : mod.methods) {
+			var renderGroup = annotations(method.visibleAnnotations, method.invisibleAnnotations).stream()
+				.filter(annotation -> annotation.desc.endsWith("/Group;") && "hangulInlineRender".equals(value(annotation, "name")))
+				.findFirst().orElse(null);
 			for (var instruction : method.instructions) {
 				if (instruction instanceof MethodInsnNode call && gameClass(call.owner)) {
 					check(member(call.owner, call.name, call.desc, true), "Method " + call.owner + "." + call.name + call.desc);
@@ -147,7 +159,14 @@ public final class BinaryCompatibilityCheck {
 						.filter(m -> selector.equals(m.name) || selector.equals(m.name + m.desc)).toList();
 					boolean screenHook = method.name.equals("hangul$endFallbackSession")
 						&& (mod.name.endsWith("/MinecraftScreenMixin") || mod.name.endsWith("/GuiScreenMixin"));
-					if (screenHook) {
+					boolean renderAlternative = renderGroup != null && annotation.desc.endsWith("/WrapMethod;");
+					if (renderAlternative) {
+						check(Integer.valueOf(1).equals(value(renderGroup, "min")) && Integer.valueOf(1).equals(value(renderGroup, "max"))
+							&& Integer.valueOf(0).equals(value(annotation, "require")) && selector.contains("("),
+							"Render alternatives must require exactly one fully described target");
+						renderAlternatives++;
+						renderMatches += methods.size();
+					} else if (screenHook) {
 						screenHooks += methods.size();
 					} else {
 						check(!methods.isEmpty(), "Injection target " + target + "." + selector);
@@ -181,6 +200,7 @@ public final class BinaryCompatibilityCheck {
 				}
 			}
 		}
+		if (renderAlternatives != 0) check(renderAlternatives == 2 && renderMatches == 1, "Exactly one render signature must match " + target);
 	}
 
 	private ClassNode node(final String name) throws Exception {

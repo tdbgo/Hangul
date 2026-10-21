@@ -2,13 +2,25 @@
 
 Hangul shares its input and search sources across loaders. The Fabric JAR also runs on Quilt; NeoForge and Forge have separate JARs. No separate API mod, compatibility bridge or additional native library is required. Stable 26.2 remains the compilation target. The compatibility gate checks each exact platform JAR on the declared loader/version combinations.
 
-## Current beta.10 candidate: Snapshot 3 and Windows width controls
+## Development beta.11: Snapshot 4–5 and current loaders
 
-As of 2026-10-11, the unpublished candidate adds exactly Minecraft `26.4-snapshot-3` (`26.4-alpha.3`) to Fabric/Quilt. Later snapshots and stable 26.4 are not declared. NeoForge adds `26.1.2.116`, `26.2.0.90` and `26.3.0.69-beta`; Forge adds `26.3-66.0.10`. Previously declared loader pairs remain in the matrix. The 26.2 compilation baseline and existing runtime dependencies are unchanged.
+The source descriptor adds Minecraft `26.4-snapshot-4` and `26.4-snapshot-5` to Fabric/Quilt. Compilation stays on 26.2. Both snapshots use new widget rendering signatures and EditBox-based sign lines. The adapter accepts both rendering signatures with an exactly-one injection group and recognizes the sign layout before applying its input hooks.
+
+The exact matrix adds NeoForge `26.1.2.122`, `26.2.0.93`, `26.3.0.95` and Forge `26.1.2-64.1.5`, `26.2-65.1.5`, `26.3-66.1.0`. Fabric `0.19.5` remains the stable verification loader; `0.20.1` is checked separately as a preview. Quilt remains `0.31.0-beta.4`.
+
+Fabric/Quilt verification fixtures and production candidates are compiled once against 26.2, then tested unchanged against each target runtime. This avoids compiling legacy-only types against newer games where those types have been removed. Target runtimes still check descriptors, apply actual Mixins and run widget regressions. No dependency override or unchecked version range is used.
+
+The final local Windows matrix passed 78 distinct combinations: 22 each for stable Fabric and Quilt, nine minimum-Fabric checks, four preview-Fabric checks, 12 NeoForge pairs and nine Forge pairs. Four repeated baseline checks brought the successful execution count to 82. Snapshot 4–5 transform 13 target classes and 40 hooks through the modern sign path; earlier targets retain 14 classes and 44 hooks. These are headless loader/widget checks, not native IME or graphics tests. The generated CI matrix also covers Linux, but the revised remote workflow has not run yet.
+
+The public download is still beta.10. Its internal descriptors do not permit Snapshot 4–5 or the newly added exact NeoForge/Forge versions. A Modrinth compatibility label alone cannot change that. Candidate results and native DXGI observations are recorded separately in [release readiness](RELEASE_READINESS.md).
+
+## Published beta.10: Snapshot 3 and Windows width controls
+
+Beta.10 was published on 2026-10-11 on [GitHub](https://github.com/tdbgo/Hangul/releases/tag/v1.3.0-beta.10) and [Modrinth](https://modrinth.com/mod/hangul/versions). It adds Minecraft `26.4-snapshot-3` (`26.4-alpha.3`) to Fabric/Quilt, NeoForge `26.1.2.116`, `26.2.0.90`, `26.3.0.69-beta`, and Forge `26.3-66.0.10`. Previously declared loader pairs remain supported. The 26.2 compilation baseline and runtime dependencies are unchanged.
 
 The candidate now includes optional Windows controls for full-width Latin input: F7 attempts a one-time half-width repair, and Shift+F7 toggles persistence. Automatic handling is off by default and limited to newly committed full-width Latin letters and digits in Korean IME English mode. Composition, candidates, other languages and clipboard content are not normalized. See [IME width controls](IME_WIDTH.md) for the eligibility checks and native-test limits.
 
-Release staging now requires changed runtime class bytes for every selected platform. Version, game targets, loader predicates, icons or other resources alone do not justify uploading a new file. This candidate has shared runtime changes; the [readiness record](RELEASE_READINESS.md) identifies the final artifacts and outstanding checks. The dated results below refer to earlier hashes, not the current candidate.
+Release staging requires changed runtime class bytes for every selected platform. Version, game targets, loader predicates, icons or other resources alone do not justify uploading a new file. The [readiness record](RELEASE_READINESS.md) identifies beta.10's published artifacts and verification scope. Dated results below refer to their own hashes, not to beta.11.
 
 The final Windows matrix passed 62 distinct combinations: 20 Fabric, 20 Quilt, seven minimum-Fabric checks, nine NeoForge pairs and six Forge pairs. Four repeated baseline checks produced 66 successful executions in total. Every execution verified 14 transformed game classes, 44 hooks, widget behavior and the guarded width-event logic, with candidate hash receipts. Win32 bindings were checked read-only; native IME recovery, candidate geometry and graphics were not tested by this matrix.
 

@@ -76,19 +76,26 @@ dependencies {
 
 def compatibilityJar = providers.gradleProperty('compatibilityJar')
 	.map { file(it) }.orElse(tasks.named('jar').flatMap { it.archiveFile }.map { it.asFile })
+def fixedVerificationFixture = providers.gradleProperty('verificationFixture').map { file(it) }
+def verificationFixture = fixedVerificationFixture.orElse(providers.provider { tasks.verificationJar.archiveFile.get().asFile })
+def isolatedVerificationClasspath = {
+	def outputs = sourceSets.main.output.files + sourceSets.client.output.files + sourceSets.verification.output.files
+	files(sourceSets.verification.runtimeClasspath.files.findAll { !outputs.contains(it) }) + files(verificationFixture.get())
+}
 
 apply from: 'gradle/verification-receipt.gradle'
 
 tasks.register('verifyBinaryCompatibility', JavaExec) {
 	group = 'verification'
 	description = 'Checks the exact candidate JAR against Minecraft descriptors and Mixin targets.'
-	dependsOn verificationClasses
+	if (!fixedVerificationFixture.isPresent()) dependsOn 'verificationJar'
 	if (!providers.gradleProperty('compatibilityJar').isPresent()) {
 		dependsOn jar
 	}
-	classpath = sourceSets.verification.runtimeClasspath
+	classpath = files()
 	mainClass = 'kr.playcity.hangul.verification.BinaryCompatibilityCheck'
 	doFirst {
+		classpath = isolatedVerificationClasspath()
 		args compatibilityJar.get().absolutePath, loom.minecraftProvider.minecraftClientJar.absolutePath
 	}
 }
@@ -100,18 +107,26 @@ tasks.register('verificationJar', Jar) {
 }
 
 tasks.register('stageCompatibilityJar', Copy) {
-	dependsOn build
+	dependsOn build, 'stageVerificationFixture'
 	from(tasks.named('jar').flatMap { it.archiveFile })
 	into layout.buildDirectory.dir('compatibility')
 	rename { 'hangul.jar' }
+}
+
+tasks.register('stageVerificationFixture', Copy) {
+	dependsOn verificationJar
+	from tasks.named('verificationJar').flatMap { it.archiveFile }
+	into layout.buildDirectory.dir('compatibility')
+	rename { 'verification.jar' }
 }
 
 tasks.register('verifyMixinApplication', JavaExec) {
 	timeout = java.time.Duration.ofMinutes(3)
 	group = 'verification'
 	description = 'Applies every candidate Mixin through Fabric Loader without starting a game window.'
-	dependsOn verificationJar, verifyBinaryCompatibility
-	classpath = (sourceSets.verification.runtimeClasspath - sourceSets.verification.output)
+	dependsOn verifyBinaryCompatibility
+	if (!fixedVerificationFixture.isPresent()) dependsOn verificationJar
+	classpath = files()
 	mainClass = 'net.fabricmc.loader.impl.launch.knot.KnotClient'
 	systemProperty 'fabric.development', 'true'
 	systemProperty 'fabric.side', 'client'
@@ -120,13 +135,13 @@ tasks.register('verifyMixinApplication', JavaExec) {
 	systemProperty 'mixin.debug.countInjections', 'true'
 	systemProperty 'java.awt.headless', 'true'
 	def runPath = layout.buildDirectory.dir("verification/run-${project.minecraft_version}")
-	def fixtureJar = tasks.named('verificationJar').flatMap { it.archiveFile }
 	configureVerificationReceipt(it, runPath.map { it.file('result.txt') }, compatibilityJar)
 	doFirst {
+		classpath = isolatedVerificationClasspath()
 		def runDirectory = runPath.get().asFile
 		runDirectory.mkdirs()
 		workingDir runDirectory
-		systemProperty 'fabric.addMods', compatibilityJar.get().absolutePath + File.pathSeparator + fixtureJar.get().asFile.absolutePath
+		systemProperty 'fabric.addMods', compatibilityJar.get().absolutePath + File.pathSeparator + verificationFixture.get().absolutePath
 		systemProperty 'hangul.verification.jar', compatibilityJar.get().absolutePath
 		if (providers.gradleProperty('compatibilityMods').isPresent()) {
 			def mods = fileTree(providers.gradleProperty('compatibilityMods').get()).matching { include '*.jar' }.files
@@ -134,7 +149,7 @@ tasks.register('verifyMixinApplication', JavaExec) {
 			classpath += files(mods)
 			boolean thirdPartyOnly = providers.gradleProperty('thirdPartyOnly').map { it.toBoolean() }.getOrElse(false)
 			systemProperty 'fabric.addMods',
-				((thirdPartyOnly ? [fixtureJar.get().asFile] : [compatibilityJar.get(), fixtureJar.get().asFile]) + mods)
+				((thirdPartyOnly ? [verificationFixture.get()] : [compatibilityJar.get(), verificationFixture.get()]) + mods)
 					.collect { it.absolutePath }.join(File.pathSeparator)
 			systemProperty 'hangul.verification.rei', 'true'
 			systemProperty 'hangul.verification.imblocker', providers.gradleProperty('withIMBlocker').getOrElse('false')

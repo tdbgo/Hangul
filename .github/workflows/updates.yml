@@ -1,0 +1,31 @@
+name: upstream compatibility report
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '20 3 * * 4'
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Compare official versions with declared and published support
+        run: python scripts/check-updates.py --output updates.json
+      - name: Record read-only update report
+        run: |
+          echo '### Upstream compatibility' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat updates.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: upstream-compatibility
+          path: updates.json
+          if-no-files-found: error

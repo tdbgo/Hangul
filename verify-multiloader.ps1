@@ -21,12 +21,15 @@ try {
 	if ('fabric' -in $Platforms) {
 		Invoke-CheckedGradle -Arguments @('clean', 'stageCompatibilityJar', 'verifyQuiltApplication')
 		$fabricHash = (Get-FileHash -LiteralPath $fabricCandidate -Algorithm SHA256).Hash
+		$fabricFixture = Join-Path $candidates 'verification.jar'
+		$fabricFixtureHash = (Get-FileHash -LiteralPath $fabricFixture -Algorithm SHA256).Hash
 		$artifactPaths += $fabricCandidate
 	}
 	function Assert-FabricCandidate {
 		if ((Get-FileHash -LiteralPath $fabricCandidate -Algorithm SHA256).Hash -ne $fabricHash) {
 			throw 'Fabric/Quilt candidate changed during verification'
 		}
+		if ((Get-FileHash -LiteralPath $fabricFixture -Algorithm SHA256).Hash -ne $fabricFixtureHash) { throw 'Verification fixture changed' }
 	}
 	$matrix = Get-Content -Raw platform-matrix.json | ConvertFrom-Json
 	foreach ($platform in @('neoforge', 'forge') | Where-Object { $_ -in $Platforms }) {
@@ -52,13 +55,20 @@ try {
 	if ($FullMatrix -and 'fabric' -in $Platforms) {
 		$metadata = Get-Content -Raw src/main/resources/fabric.mod.json | ConvertFrom-Json
 		foreach ($target in $metadata.custom.'hangul:tested_game_versions') {
-			Invoke-CheckedGradle -Arguments @('verifyMixinApplication', 'verifyQuiltApplication', "-Pminecraft_version=$target", "-PcompatibilityJar=$candidates/hangul.jar")
+			Invoke-CheckedGradle -Arguments @('verifyMixinApplication', 'verifyQuiltApplication', "-Pminecraft_version=$target", "-PcompatibilityJar=$candidates/hangul.jar", "-PverificationFixture=$fabricFixture")
 			Assert-FabricCandidate
 		}
 		$minimumLoader = (Select-String -Path gradle.properties -Pattern '^loader_api_version=(.+)$').Matches.Groups[1].Value
 		if (!$minimumLoader) { throw 'Missing minimum Fabric Loader version' }
-		foreach ($target in @('26.1', '26.2', '26.3-pre-2', '26.3', '26.4-snapshot-1', '26.4-snapshot-2', '26.4-snapshot-3')) {
-			Invoke-CheckedGradle -Arguments @('verifyMixinApplication', "-Pminecraft_version=$target", "-Ploader_version=$minimumLoader", "-PcompatibilityJar=$fabricCandidate")
+		$verificationMatrixText = & python scripts/verification-matrix.py
+		if ($LASTEXITCODE -ne 0) { throw 'Could not derive verification matrix' }
+		$verificationMatrix = $verificationMatrixText | ConvertFrom-Json
+		foreach ($target in $verificationMatrix.representatives) {
+			Invoke-CheckedGradle -Arguments @('verifyMixinApplication', "-Pminecraft_version=$target", "-Ploader_version=$minimumLoader", "-PcompatibilityJar=$fabricCandidate", "-PverificationFixture=$fabricFixture")
+			Assert-FabricCandidate
+		}
+		foreach ($target in $verificationMatrix.preview) {
+			Invoke-CheckedGradle -Arguments @('verifyMixinApplication', "-Pminecraft_version=$($target.minecraft)", "-Ploader_version=$($target.loader)", "-PcompatibilityJar=$fabricCandidate", "-PverificationFixture=$fabricFixture")
 			Assert-FabricCandidate
 		}
 	}

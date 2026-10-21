@@ -10,7 +10,7 @@ tasks.register('verifyQuiltApplication', JavaExec) {
 	timeout = java.time.Duration.ofMinutes(3)
 	group = 'verification'
 	description = 'Loads the exact Fabric candidate through Quilt and exercises transformed widgets.'
-	dependsOn verificationJar
+	if (!providers.gradleProperty('verificationFixture').isPresent()) dependsOn verificationJar
 	if (!providers.gradleProperty('compatibilityJar').isPresent()) { dependsOn jar }
 	mainClass = 'org.quiltmc.loader.impl.launch.knot.KnotClient'
 	systemProperty 'fabric.development', 'true'
@@ -34,7 +34,7 @@ tasks.register('verifyQuiltApplication', JavaExec) {
 		} - sourceSets.main.output - sourceSets.client.output
 		classpath = gameLibraries + configurations.quiltRuntime
 		def candidate = candidateFile.get()
-		def fixture = tasks.verificationJar.archiveFile.get().asFile
+		def fixture = providers.gradleProperty('verificationFixture').map { file(it) }.getOrElse(tasks.verificationJar.archiveFile.get().asFile)
 		def runDir = runPath.get().asFile
 		runDir.mkdirs()
 		workingDir runDir

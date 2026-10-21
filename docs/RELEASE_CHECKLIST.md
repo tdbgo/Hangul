@@ -18,21 +18,23 @@
 
 ```powershell
 $candidateJars = @(
-    'build/libs/hangul-1.3.0-beta.10-fabric.jar',
-    'platforms/neoforge/build/libs/hangul-1.3.0-beta.10-neoforge.jar',
-    'platforms/forge/build/libs/hangul-1.3.0-beta.10-forge.jar'
+    'build/libs/hangul-1.3.0-beta.11-fabric.jar',
+    'platforms/neoforge/build/libs/hangul-1.3.0-beta.11-neoforge.jar',
+    'platforms/forge/build/libs/hangul-1.3.0-beta.11-forge.jar'
 )
 python scripts/verify-artifacts.py @candidateJars
-python scripts/stage-release.py @candidateJars --previous-dir .toolchains/release-baseline-beta10 --output-dir build/release/1.3.0-beta.10
+python scripts/stage-release.py @candidateJars --previous-dir .toolchains/release-baseline-beta11 --output-dir build/release/1.3.0-beta.11
 ```
 
-위 예시는 공통 코드가 바뀐 beta.10 후보의 세 파일을 선택합니다. 특정 플랫폼만 코드가 바뀌었다면 버전 설정과 선택 목록도 그 플랫폼만 포함하도록 맞춥니다. 스테이징은 업로드가 아니며, 남은 실사용 검사와 릴리스 문구 검토를 마친 뒤 게시합니다.
+위 예시는 공통 입력 코드가 바뀐 beta.11 후보를 공개 beta.10 파일과 비교합니다. 특정 플랫폼만 코드가 바뀌었다면 버전 설정과 선택 목록도 그 플랫폼만 포함하도록 맞춥니다. 스테이징은 업로드가 아니며, 실사용 검사와 릴리스 문구 검토를 마친 뒤 게시합니다.
 
 게이트는 전체 내용과 실행 클래스 바이트를 대조합니다. 실행 클래스가 같다면 새 지원 버전·리소스·버전이 달라져도 새 파일을 거부합니다. ZIP 구성과 텍스트 줄바꿈 차이, 미선택 플랫폼, 이전 파일 누락, 중복·누락된 플랫폼과 배포 폴더의 잔여 파일도 배포 사유로 인정하지 않습니다. 기존 파일이 다른 내용이면 덮어쓰지 않습니다.
 
 GitHub에는 게이트가 만든 폴더의 JAR과 체크섬만 올리고, Modrinth에서도 같은 JAR만 업로드합니다. 전체 CI 산출물(`verified-*`)을 일괄 배포하지 않습니다. 기존 Forge·NeoForge 릴리스는 삭제하거나 다시 올리지 않습니다.
 
-CI는 모든 로더의 26.2 기준 빌드·실제 로더 적용·패키지를 검사합니다. push에서는 이번 릴리스에 포함된 Forge·NeoForge 파일만 추가 버전 행렬을 반복하고, PR에서는 두 플랫폼의 전체 행렬을 검사합니다. Fabric·Quilt의 선언 버전·대표 Windows·최소 Loader 행렬은 계속 유지합니다. 플랫폼 작업은 Forge의 초기 게임 재컴파일 시간을 포함해 35분으로 제한하며, 각 실제 로더 검사에는 3분 제한을 유지합니다. 선택적 입력창 검사는 별도 20분 작업으로 실행합니다.
+CI는 모든 로더의 26.2 기준 빌드·실제 로더 적용·패키지를 검사합니다. `scripts/verification-matrix.py`가 선언 목록에서 전체 Fabric·Quilt, 대표 Windows, 최소 Fabric 및 시험판 Fabric 대상을 생성합니다. 새 스냅샷을 추가하면 대표·최소 로더 검사에도 자동 반영됩니다. NeoForge·Forge는 게임 버전별 작업으로 나눠 동일 후보를 검사하며, 패키지 게이트는 모든 호환성 작업의 성공을 기다립니다. 플랫폼 빌드는 35분, 게임별 플랫폼 검사는 25분, 개별 로더 실행은 3분으로 제한합니다.
+
+`updates.yml`은 수동 실행 또는 주간 일정으로 공식 게임·로더 메타데이터를 조회합니다. 결과는 읽기 전용 보고서이며 저장소·지원 선언·릴리스·Modrinth를 자동 변경하지 않습니다. 개발 소스의 추가 대상과 공개 파일의 지원 누락을 따로 표시합니다. 아직 선언하지 않은 26.x용 NeoForge·Forge가 나오면 검토 대상으로 보고하며, Maven의 목록 순서만으로 최신 버전을 판단하지 않습니다.
 
 ## 라이선스와 브랜드
 
@@ -52,6 +54,7 @@ CI는 모든 로더의 26.2 기준 빌드·실제 로더 적용·패키지를 �
 - `verify-compatibility.ps1`로 동일한 배포 후보 JAR을 전체 선언 버전에서 검사합니다.
 - 멀티로더 릴리스는 `verify-multiloader.ps1 -FullMatrix`와 패키지 검사를 통과해야 합니다. 선택 릴리스는 `-Platforms fabric`처럼 해당 플랫폼을 지정합니다. 로더별 최종 파일 하나를 고정하고 버전별 검사에서 다시 빌드한 파일로 바꾸지 않습니다.
 - 배포하는 로더는 모두 현재 실행이 남긴 성공 기록과 후보 JAR의 SHA-256이 일치해야 합니다. 프로세스 종료 코드나 이전 실행의 성공 기록만으로 통과 처리하지 않습니다.
+- Fabric·Quilt의 다른 게임 버전을 검사할 때는 26.2에서 만든 `build/compatibility/verification.jar`를 `-PverificationFixture`로 고정합니다. 대상 게임에 맞춰 모드 소스를 다시 컴파일하거나 검사 중 후보를 바꾸지 않습니다.
 - Quilt는 Fabric 파일, NeoForge·Forge는 각 전용 파일로 배포합니다. 플랫폼 표시와 실제 JAR 메타데이터를 대조합니다.
 - NeoForge 26.2용 메타데이터는 `iconFile`을 사용하고, 사용 중단된 `logoFile`이 다시 포함되지 않도록 패키지 검사로 차단합니다.
 - `custom.hangul:tested_game_versions`는 Mojang 버전 ID, `depends.minecraft`는 Fabric 정규화 버전으로 작성합니다. 두 목록의 일치 검사가 통과해야 합니다.
@@ -63,6 +66,10 @@ CI는 모든 로더의 26.2 기준 빌드·실제 로더 적용·패키지를 �
 - 실제 설치 폴더에는 `hangul` 또는 이전 별칭 `hangeul`의 활성 JAR이 합계 하나만 있어야 합니다.
 
 ## Windows IME 수동 검사
+
+26.4 Snapshot 5의 `Prefer DXGI Present`는 재시작 후 적용됩니다. 설정 표시가 켜졌다는 이유만으로 현재 실행을 DXGI 검사로 계산하지 않습니다. 꺼짐·켜짐 각각에서 별도 재시작한 뒤 조합·후보창·창 전환을 확인합니다.
+
+`scripts/prepare-native-client.py`는 공식 체크섬을 확인한 라이브러리와 전체 에셋으로 `.toolchains/native-clients/` 아래 별도 실행 환경을 준비합니다. 실제 계정 인증 정보를 읽지 않으며, 사용자 설치·설정·월드를 교체하지 않습니다. 오프라인 실행의 Realms 인증 경고는 입력 오류와 구분합니다.
 
 1.3.0-beta.6의 잔여 수동 검사는 2026-09-06 테스터의 전체 완료 보고로 마감했습니다. 직접 관찰한 범위와 보고로 확인한 범위, 공개 전 남은 절차는 [배포 준비 상태](RELEASE_READINESS.md)를 따릅니다. 아래 목록은 이후 릴리스에서도 사용하는 검사 기준입니다.
 

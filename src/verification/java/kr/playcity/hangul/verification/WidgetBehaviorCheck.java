@@ -25,8 +25,8 @@ final class WidgetBehaviorCheck {
 		checkSingleLine(font);
 		checkInputLifecycle(font);
 		checkMultiline(font);
-		SignBehaviorCheck.run();
-		System.out.println("WIDGET_BEHAVIOR_OK search, input lifecycle, render restoration, multiline layout reuse, and sign navigation");
+		SignBehaviorCheck.run(font);
+		System.out.println("WIDGET_BEHAVIOR_OK search, input lifecycle, render restoration, multiline layout reuse, and sign input");
 	}
 
 	private static void checkSearchTree() throws Exception {
@@ -141,20 +141,29 @@ final class WidgetBehaviorCheck {
 		return field(field(box, "hangul$layoutCache"), "layout");
 	}
 
-	private static PreeditEvent preedit(final String text, final int caret) {
+	static PreeditEvent preedit(final String text, final int caret) {
 		return new PreeditEvent(text, caret, List.of(text), 0);
 	}
 
-	private static Method wrapper(final Class<?> type) {
+	static Method wrapper(final Class<?> type) {
+		boolean compact = Arrays.stream(type.getDeclaredMethods()).anyMatch(method ->
+			(method.getName().equals("extractWidgetRenderState") || method.getName().equals("extractContents"))
+				&& method.getParameterCount() == 1);
 		Method method = Arrays.stream(type.getDeclaredMethods())
-			.filter(m -> m.getName().contains("hangul$renderInlinePreedit") && m.getParameterCount() == 5)
+			.filter(m -> m.getName().contains(compact ? "hangul$renderInlinePreeditCompact" : "hangul$renderInlinePreedit")
+				&& m.getParameterCount() == (compact ? 2 : 5))
 			.findFirst().orElseThrow();
 		method.setAccessible(true);
 		return method;
 	}
 
-	private static void invoke(final Method wrapper, final Object widget, final Operation<Void> original) throws Exception {
-		wrapper.invoke(widget, null, 0, 0, 0.0f, original);
+	static void invoke(final Method wrapper, final Object widget, final Operation<Void> original) throws Exception {
+		Operation<Void> checked = args -> {
+			if (args.length != wrapper.getParameterCount() - 1) throw new AssertionError("Incorrect render argument count");
+			return original.call(args);
+		};
+		if (wrapper.getParameterCount() == 2) wrapper.invoke(widget, null, checked);
+		else wrapper.invoke(widget, null, 0, 0, 0.0f, checked);
 	}
 
 	private static void invokeInterrupted(final Method wrapper, final Object widget,
@@ -175,7 +184,7 @@ final class WidgetBehaviorCheck {
 		return field.get(owner);
 	}
 
-	private static void setField(final Object owner, final String name, final Object value) throws Exception {
+	static void setField(final Object owner, final String name, final Object value) throws Exception {
 		for (Class<?> type = owner.getClass(); type != null; type = type.getSuperclass()) {
 			try {
 				Field field = type.getDeclaredField(name);

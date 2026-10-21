@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Group;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -86,7 +87,8 @@ public abstract class MultiLineEditBoxMixin {
 		hangul$clearPreedit();
 	}
 
-	@WrapMethod(method = "extractContents")
+	@Group(name = "hangulInlineRender", min = 1, max = 1)
+	@WrapMethod(method = "extractContents(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V", require = 0, expect = 0)
 	private void hangul$renderInlinePreedit(
 		final GuiGraphicsExtractor graphics,
 		final int mouseX,
@@ -94,8 +96,20 @@ public abstract class MultiLineEditBoxMixin {
 		final float partialTick,
 		final Operation<Void> original
 	) {
+		hangul$renderComposition(graphics, mouseX, mouseY, partialTick, original, false);
+	}
+
+	@Group(name = "hangulInlineRender", min = 1, max = 1)
+	@WrapMethod(method = "extractContents(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V", require = 0, expect = 0)
+	private void hangul$renderInlinePreeditCompact(final GuiGraphicsExtractor graphics, final Operation<Void> original) {
+		hangul$renderComposition(graphics, 0, 0, 0.0f, original, true);
+	}
+
+	@Unique
+	private void hangul$renderComposition(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY,
+		final float partialTick, final Operation<Void> original, final boolean compact) {
 		if (hangul$preedit == null || !hangul$hasValidRange()) {
-			original.call(graphics, mouseX, mouseY, partialTick);
+			if (compact) original.call(graphics); else original.call(graphics, mouseX, mouseY, partialTick);
 			return;
 		}
 
@@ -127,7 +141,7 @@ public abstract class MultiLineEditBoxMixin {
 			} else {
 				fields.hangul$setDisplayLines(lines);
 			}
-			original.call(graphics, mouseX, mouseY, partialTick);
+			if (compact) original.call(graphics); else original.call(graphics, mouseX, mouseY, partialTick);
 		} finally {
 			fields.hangul$setValue(savedValue);
 			fields.hangul$setCursor(savedCursor);

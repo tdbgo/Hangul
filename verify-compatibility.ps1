@@ -26,15 +26,18 @@ try {
 	}
 	$candidate = Join-Path $PSScriptRoot 'build\compatibility\hangul.jar'
 	$candidateHash = (Get-FileHash -LiteralPath $candidate -Algorithm SHA256).Hash
+	$fixture = Join-Path $PSScriptRoot 'build\compatibility\verification.jar'
+	$fixtureHash = (Get-FileHash -LiteralPath $fixture -Algorithm SHA256).Hash
 	foreach ($minecraftVersion in $MinecraftVersions) {
 		Write-Host "Verifying the same candidate on Minecraft $minecraftVersion / Loader $LoaderVersion"
-		& .\gradlew.bat verifyMixinApplication --no-daemon "-Pminecraft_version=$minecraftVersion" "-Ploader_version=$LoaderVersion" "-PcompatibilityJar=$candidate"
+		& .\gradlew.bat verifyMixinApplication --no-daemon "-Pminecraft_version=$minecraftVersion" "-Ploader_version=$LoaderVersion" "-PcompatibilityJar=$candidate" "-PverificationFixture=$fixture"
 		if ($LASTEXITCODE -ne 0) {
 			throw "Compatibility verification failed for Minecraft $minecraftVersion"
 		}
 		if ((Get-FileHash -LiteralPath $candidate -Algorithm SHA256).Hash -ne $candidateHash) {
 			throw 'Candidate JAR changed during verification.'
 		}
+		if ((Get-FileHash -LiteralPath $fixture -Algorithm SHA256).Hash -ne $fixtureHash) { throw 'Verification fixture changed.' }
 	}
 	Write-Host "Compatibility matrix passed: $($MinecraftVersions -join ', ')"
 	Write-Host "Candidate SHA-256: $candidateHash"

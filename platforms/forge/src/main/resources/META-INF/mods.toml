@@ -16,7 +16,7 @@ description='''Native Korean input and Korean-aware item, recipe, and command se
 [[dependencies.hangul]]
 modId="forge"
 mandatory=true
-versionRange="[62.0.9],[63.0.2],[64.1.3],[65.1.3],[66.0.9],[66.0.10]"
+versionRange="[62.0.9],[63.0.2],[64.1.3],[64.1.5],[65.1.3],[65.1.5],[66.0.9],[66.0.10],[66.1.0]"
 side="CLIENT"
 
 [[dependencies.hangul]]

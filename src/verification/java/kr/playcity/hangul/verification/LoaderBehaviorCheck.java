@@ -41,6 +41,13 @@ public final class LoaderBehaviorCheck {
 					}
 					String target = ((Type) list(value(annotation, "value")).getFirst()).getClassName();
 					Class<?> transformed = Class.forName(target, false, LoaderBehaviorCheck.class.getClassLoader());
+					if (entry.getAsString().equals("AbstractSignEditScreenMixin")
+						&& java.util.Arrays.stream(transformed.getDeclaredFields()).anyMatch(field -> field.getName().equals("signLines"))) {
+						Class<?> line = Class.forName(target + "$SignLineEditBox", false, LoaderBehaviorCheck.class.getClassLoader());
+						if (!"net.minecraft.client.gui.components.EditBox".equals(line.getSuperclass().getName()))
+							throw new AssertionError("Unverified modern sign widget");
+						continue;
+					}
 					var methods = transformed.getDeclaredMethods();
 					transformed.getDeclaredFields();
 					targets.add(target);
@@ -53,7 +60,9 @@ public final class LoaderBehaviorCheck {
 								continue;
 							}
 							if (Integer.valueOf(0).equals(value(hook, "require"))) {
-								boolean hasTarget = java.util.Arrays.stream(methods).anyMatch(m -> m.getName().equals("setScreen"));
+								boolean hasTarget = list(value(hook, "method")).stream().anyMatch(selector ->
+									java.util.Arrays.stream(methods).anyMatch(m -> selector.equals(m.getName())
+										|| selector.equals(m.getName() + Type.getMethodDescriptor(m))));
 								if (!hasTarget) {
 									continue;
 								}
