@@ -22,7 +22,7 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 
 ### 개발 버전: beta.11
 
-26.4 Snapshot 4·5의 입력창 렌더링과 새 표지판 입력줄에 대응하고 있습니다. 최신 NeoForge·Forge 및 시험판 Fabric Loader도 검증 목록에 추가했습니다. 위 표는 공개 파일의 범위이며, 개발 소스의 추가 지원 목록과 구분합니다.
+26.4 Snapshot 4·5의 입력창 렌더링과 새 표지판 입력줄에 대응했습니다. NeoForge·Forge 및 시험판 Fabric Loader의 추가 조합도 자동 검사를 통과했습니다. Snapshot 5의 DXGI 꺼짐·켜짐에서 한글·한자 입력이 정상이라는 사용자 확인을 받았습니다. 위 표는 공개 파일의 범위이며, 개발 소스의 추가 지원 목록과 구분합니다.
 
 ## 기본 사용법
 

@@ -2,7 +2,7 @@
 
 ## 1.3.0-beta.11 (미배포)
 
-Minecraft 26.4 Snapshot 4·5를 지원합니다. 새 입력창 렌더링과 표지판 입력 구조에 맞춰 한글 조합 표시를 수정했습니다. NeoForge·Forge의 최신 26.x 로더 지원을 추가했습니다.
+Fabric·Quilt에 Minecraft 26.4 Snapshot 4·5 지원을 추가했습니다. 새 입력창과 표지판에서 한글 조합 표시를 수정하고, NeoForge·Forge 지원 로더를 추가했습니다.
 
 ## 1.3.0-beta.10 (2026-10-11)
 

@@ -14,6 +14,8 @@ The final local Windows matrix passed 78 distinct combinations: 22 each for stab
 
 The public download is still beta.10. Its internal descriptors do not permit Snapshot 4–5 or the newly added exact NeoForge/Forge versions. A Modrinth compatibility label alone cannot change that. Candidate results and native DXGI observations are recorded separately in [release readiness](RELEASE_READINESS.md).
 
+On 2026-10-23, the tester confirmed Snapshot 4 startup and Korean composition/Hanja input in Snapshot 5 with DXGI Present both off and on, restarting after the setting change. This is a tester report, not an automated native-input result. It does not establish fullscreen transitions, candidate coordinates or world-save behavior. The candidate JAR hashes remain unchanged.
+
 ## Published beta.10: Snapshot 3 and Windows width controls
 
 Beta.10 was published on 2026-10-11 on [GitHub](https://github.com/tdbgo/Hangul/releases/tag/v1.3.0-beta.10) and [Modrinth](https://modrinth.com/mod/hangul/versions). It adds Minecraft `26.4-snapshot-3` (`26.4-alpha.3`) to Fabric/Quilt, NeoForge `26.1.2.116`, `26.2.0.90`, `26.3.0.69-beta`, and Forge `26.3-66.0.10`. Previously declared loader pairs remain supported. The 26.2 compilation baseline and runtime dependencies are unchanged.
