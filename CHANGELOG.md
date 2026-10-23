@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.3.0-beta.11 (미배포)
+## 1.3.0-beta.11 (2026-10-23)
 
 Fabric·Quilt에 Minecraft 26.4 Snapshot 4·5 지원을 추가했습니다. 새 입력창과 표지판에서 한글 조합 표시를 수정하고, NeoForge·Forge 지원 로더를 추가했습니다.
 

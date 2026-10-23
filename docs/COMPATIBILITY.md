@@ -2,17 +2,17 @@
 
 Hangul shares its input and search sources across loaders. The Fabric JAR also runs on Quilt; NeoForge and Forge have separate JARs. No separate API mod, compatibility bridge or additional native library is required. Stable 26.2 remains the compilation target. The compatibility gate checks each exact platform JAR on the declared loader/version combinations.
 
-## Development beta.11: Snapshot 4–5 and current loaders
+## Published beta.11: Snapshot 4–5 and current loaders
 
-The source descriptor adds Minecraft `26.4-snapshot-4` and `26.4-snapshot-5` to Fabric/Quilt. Compilation stays on 26.2. Both snapshots use new widget rendering signatures and EditBox-based sign lines. The adapter accepts both rendering signatures with an exactly-one injection group and recognizes the sign layout before applying its input hooks.
+Beta.11 adds Minecraft `26.4-snapshot-4` and `26.4-snapshot-5` to Fabric/Quilt. Compilation stays on 26.2. Both snapshots use new widget rendering signatures and EditBox-based sign lines. The adapter accepts both rendering signatures with an exactly-one injection group and recognizes the sign layout before applying its input hooks.
 
 The exact matrix adds NeoForge `26.1.2.122`, `26.2.0.93`, `26.3.0.95` and Forge `26.1.2-64.1.5`, `26.2-65.1.5`, `26.3-66.1.0`. Fabric `0.19.5` remains the stable verification loader; `0.20.1` is checked separately as a preview. Quilt remains `0.31.0-beta.4`.
 
 Fabric/Quilt verification fixtures and production candidates are compiled once against 26.2, then tested unchanged against each target runtime. This avoids compiling legacy-only types against newer games where those types have been removed. Target runtimes still check descriptors, apply actual Mixins and run widget regressions. No dependency override or unchecked version range is used.
 
-The final local Windows matrix passed 78 distinct combinations: 22 each for stable Fabric and Quilt, nine minimum-Fabric checks, four preview-Fabric checks, 12 NeoForge pairs and nine Forge pairs. Four repeated baseline checks brought the successful execution count to 82. Snapshot 4–5 transform 13 target classes and 40 hooks through the modern sign path; earlier targets retain 14 classes and 44 hooks. These are headless loader/widget checks, not native IME or graphics tests. The generated CI matrix also covers Linux, but the revised remote workflow has not run yet.
+The final local Windows matrix passed 78 distinct combinations: 22 each for stable Fabric and Quilt, nine minimum-Fabric checks, four preview-Fabric checks, 12 NeoForge pairs and nine Forge pairs. Four repeated baseline checks brought the successful execution count to 82. Snapshot 4–5 transform 13 target classes and 40 hooks through the modern sign path; earlier targets retain 14 classes and 44 hooks. These are headless loader/widget checks, not native IME or graphics tests. The revised [remote CI](https://github.com/tdbgo/Hangul/actions/runs/39916764439) passed all 65 jobs, including Linux and Windows coverage and the final artifact gate, on commit `ead64b5` before publication.
 
-The public download is still beta.10. Its internal descriptors do not permit Snapshot 4–5 or the newly added exact NeoForge/Forge versions. A Modrinth compatibility label alone cannot change that. Candidate results and native DXGI observations are recorded separately in [release readiness](RELEASE_READINESS.md).
+Beta.11 was published on 2026-10-23 on [GitHub](https://github.com/tdbgo/Hangul/releases/tag/v1.3.0-beta.11) and [Modrinth](https://modrinth.com/mod/hangul/versions). All three platform files have runtime class changes relative to beta.10. Their downloaded bytes from both services match the locally verified JARs. Beta.10 remains available but does not permit the new exact targets; changing a compatibility label alone does not change its descriptors. Automated results and native DXGI observations are recorded separately in [release readiness](RELEASE_READINESS.md).
 
 On 2026-10-23, the tester confirmed Snapshot 4 startup and Korean composition/Hanja input in Snapshot 5 with DXGI Present both off and on, restarting after the setting change. This is a tester report, not an automated native-input result. It does not establish fullscreen transitions, candidate coordinates or world-save behavior. The candidate JAR hashes remain unchanged.
 
