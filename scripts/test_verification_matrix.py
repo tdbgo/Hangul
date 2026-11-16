@@ -62,6 +62,12 @@ class VerificationMatrixTest(unittest.TestCase):
         keys = [(item["minecraft"], item["loader"], item["os"]) for item in jobs]
         self.assertEqual(len(keys), len(set(keys)))
 
+    def test_promoted_preview_has_no_duplicate_jobs(self):
+        self.properties["loader_version"] = "0.20.1"
+        result = matrix.build_matrix(self.metadata, self.properties, self.platforms)
+        self.assertEqual(result["preview"], [])
+        self.assertFalse(any(item["tier"] == "preview" for item in result["fabric"]["include"]))
+
 
 if __name__ == "__main__":
     unittest.main()

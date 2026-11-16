@@ -8,6 +8,9 @@ import unittest
 spec = importlib.util.spec_from_file_location("prepare_profile", Path(__file__).with_name("prepare-mod-profile.py"))
 prepare = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(prepare)
+runner_spec = importlib.util.spec_from_file_location("verify_profile", Path(__file__).with_name("verify-mod-compatibility.py"))
+runner = importlib.util.module_from_spec(runner_spec)
+runner_spec.loader.exec_module(runner)
 
 
 class ModProfileTest(unittest.TestCase):
@@ -70,6 +73,28 @@ class ModProfileTest(unittest.TestCase):
             for pin in pins:
                 self.assertRegex(pin["version"], r"^[A-Za-z0-9]{8}$")
                 self.assertTrue(re.fullmatch(r"[0-9a-f]{128}", pin["sha512"]), name)
+
+    def test_release_label_must_match_pinned_identity(self):
+        self.pin["release"] = "7.3.3"
+        self.metadata["version_number"] = "7.3.2"
+        with self.assertRaisesRegex(ValueError, "release name"):
+            self.validate(self.metadata)
+
+    def test_known_failure_does_not_accept_unexpected_errors_or_success(self):
+        pin = {"expected_failure": "missing-minecraft-set-screen"}
+        output = "imblocker.mixins.json:MinecraftClientMixin onScreenChanged 'setScreen' net/minecraft/client/Minecraft"
+        self.assertEqual(runner.classify_imblocker(1, output, pin, False), "KNOWN_UPSTREAM_FAILURE")
+        for code, text in [(0, output), (1, "another Mixin failed"), (1, output.replace("'setScreen'", "another"))]:
+            with self.subTest(code=code, text=text), self.assertRaises(ValueError):
+                runner.classify_imblocker(code, text, pin, False)
+        with self.assertRaisesRegex(ValueError, "Hangul was loaded"):
+            runner.classify_imblocker(1, output + "\n  - hangul 1.3.0-beta.12\n", pin, True)
+
+    def test_success_requires_its_own_completed_fixture(self):
+        with self.assertRaises(ValueError):
+            runner.classify_imblocker(0, "BUILD SUCCESSFUL", {}, False)
+        self.assertEqual(runner.classify_imblocker(0, "OPTIONAL_WIDGET_OK rei=true imblocker=true", {}, False), "PASS")
+        self.assertEqual(runner.classify_imblocker(0, "THIRD_PARTY_SMOKE_OK", {}, True), "CONTROL_PASS")
 
 
 if __name__ == "__main__":

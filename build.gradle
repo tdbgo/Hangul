@@ -64,6 +64,9 @@ dependencies {
 
 // Verification tools are separate from the shipped mod and its source archive.
 sourceSets {
+	nativeSmoke {
+		compileClasspath += sourceSets.client.compileClasspath
+	}
 	verification {
 		compileClasspath += sourceSets.client.compileClasspath
 		runtimeClasspath += sourceSets.client.runtimeClasspath - sourceSets.main.output - sourceSets.client.output
@@ -103,6 +106,14 @@ tasks.register('verifyBinaryCompatibility', JavaExec) {
 tasks.register('verificationJar', Jar) {
 	archiveClassifier = 'verification'
 	from sourceSets.verification.output
+	destinationDirectory = layout.buildDirectory.dir('verification')
+}
+
+tasks.register('nativeSmokeJar', Jar) {
+	group = 'verification'
+	description = 'Builds a test-only client startup check that exits after reaching the title screen.'
+	archiveClassifier = 'native-smoke'
+	from sourceSets.nativeSmoke.output
 	destinationDirectory = layout.buildDirectory.dir('verification')
 }
 

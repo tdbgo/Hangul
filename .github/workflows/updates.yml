@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
-      - name: Compare official versions with declared and published support
+      - name: Compare game, loaders, and pinned optional mods with tested support
         run: python scripts/check-updates.py --output updates.json
       - name: Record read-only update report
         run: |

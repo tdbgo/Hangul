@@ -4,7 +4,7 @@
     "mods": [
       {"project": "nfn13YXA", "version": "4o0NSIMj", "sha512": "4691c4a95fc949919bd80bd568e7b8e5fa67e1bd434584d4789e255157bda20e16862e905a26ab6d68f07bafcaa85aef26c7be09b3b9c25aca96affafdf3277d"},
       {"project": "9s6osm5g", "version": "Nv3xnWXd", "sha512": "37b1e402f0df5a383656e21a38ee18cdd15cb4ba3fb62fbeba82ef4b959a4479fc32718ac0d9d154a7d9104c5f7315bfa67dbeced0b8ff240b8039d4848d5df1"},
-      {"project": "lhGA9TYQ", "version": "w3CUWoxd", "sha512": "b4c74ce1c0bb47e8ba54cbdd9b24fe8cc7cfc2ed7194f1e451e369adb1f1ae9ac37afc4612124b9793cb5fd7705ebce5634caa80c2825bd23d3dba8eb0bcc53d"},
+      {"project": "lhGA9TYQ", "version": "ohb3PBGZ", "sha512": "df244fce6ffe38209e70d88696e05570e261b43780f76bd19e7a1813ffc29e128b21de6776816f3e76e50ffa0dcd32141fc3a09e5c33066f46e35d9d364dc173"},
       {"project": "P7dR8mSH", "version": "ewUK83HI", "sha512": "2502fa5ade78e9a120b3747bc1a9a2167d6671743bea45bf115d3174c94121aeda87c549446d1a604a9c11fb828de17a551e3514ce42f3e93069dd14bdaee55b"}
     ]
   },
@@ -14,7 +14,7 @@
       {"project": "nfn13YXA", "version": "rKsAE6bX", "sha512": "7724d8e8dc50248641686c878b6b60736572c49e0cd8c71640c1c57fe85aed9941cad8ff7806b923903253da3540ff3df9bf619d701f50b904990fa7cdd59ee9"},
       {"project": "9s6osm5g", "version": "fg2uyxOW", "sha512": "8924e19d41845096724fa10f3717bc51964a0edbbbcad0ff1e6c6187a398b08f356e49579a657c2dc44a7f92e3850771f3ca70bf8c1f654de60425163b91dbb1"},
       {"project": "lhGA9TYQ", "version": "1pMaB6So", "sha512": "14c61af2088b80b465f06edd3b3005038fa5be1c95a2161ce712c8da408a358038b7cd7ae4acf3198f6d47c693e4fdf65d646dac7e124f7cdd7f32bbc0dcd0ce"},
-      {"project": "P7dR8mSH", "version": "bNnaTiuM", "sha512": "ed6b2586d6fde11fde8472f5a527c51e99b67026e46f94d4bfd85e7e28ce5ee299173ee16ad576ceb51f39f98d30a811086a6deb1a86a524859cc16e12da109d"}
+      {"project": "P7dR8mSH", "version": "Zns5SSRA", "sha512": "fb686a9fa923248328107a12498229d6951e316257f18b7d0e4cbd6885ba447ed50a44076a8a5ba47cfe2043b329db3587ab000aeab1face26b2587a5d4ba6b5"}
     ]
   },
   "neoforge-26.3": {
@@ -25,6 +25,6 @@
       {"project": "lhGA9TYQ", "version": "dZ7iNvS4", "sha512": "04e6fb056ada0f0148c002527cdac09a651f275c5fa6b6dbcbcd7d4fd62a4eb6f583d7711030e1c82b00339ba808d8070a588a5432f334903d8b430a0da47ae5"}
     ]
   },
-  "imblocker-fabric": {"project": "WMDesFsZ", "version": "45vUAF8X", "sha512": "b544cb814a0f344f227fdb406672b6284efe730f4c76d92289b5b25b4af95f2a110704d23b173f4b7525d90fd65efa190f1ff36236e065ebef6640d338004ad8"},
-  "imblocker-neoforge": {"project": "WMDesFsZ", "version": "VyswcG4w", "sha512": "a626a26944ac8c8b9f61901b8566e9fd704bed55e438d92474be199fc575a63304c4eaf7156f424e5df1fdb7098568061a9b96a3c52a52a2962e9a0ffff9ab07"}
+  "imblocker-fabric": {"project": "WMDesFsZ", "version": "1EtbGEAW", "release": "7.3.3", "expected_failure": "missing-minecraft-set-screen", "sha512": "e3d9707cf4180a068855887296c784aad0da8d7d6dc4f269d5a15e454128f139c99c5b1ecca4cd7144d58e783c4d25c04126502c9b2f1b21326077217a33efe6"},
+  "imblocker-neoforge": {"project": "WMDesFsZ", "version": "zn4Io0OQ", "release": "7.3.3", "expected_failure": "missing-minecraft-set-screen", "sha512": "9d279278530e48bdc70772f48ab5db1901d395e4d56c5a79f13919018afde4a7cc266ff4c4224b72751bb96105f037e3ff484ab9a56fc55d27ed4aaed5d52751"}
 }

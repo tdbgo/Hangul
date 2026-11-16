@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import time
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -13,6 +14,22 @@ ROOT = Path(__file__).resolve().parents[1]
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise ValueError(message)
+
+
+def classify_imblocker(returncode: int, output: str, pin: dict, isolated: bool) -> str:
+    if isolated:
+        loaded = re.search(r"^\s*- hangul\s|^\s*Hangul [^\n]*\(hangul\)|^\s*- hangul \(", output, re.MULTILINE)
+        require(loaded is None, "Hangul was loaded in isolated control")
+    expected = pin.get("expected_failure")
+    if expected == "missing-minecraft-set-screen":
+        require(returncode != 0 and "imblocker.mixins.json:MinecraftClientMixin" in output
+                and "onScreenChanged" in output and "'setScreen'" in output
+                and "net/minecraft/client/Minecraft" in output, "Unexpected IMBlocker loader result")
+        return "KNOWN_UPSTREAM_FAILURE"
+    require(expected is None, "Unrecognized pinned IMBlocker expectation")
+    marker = "THIRD_PARTY_SMOKE_OK" if isolated else "OPTIONAL_WIDGET_OK rei=true imblocker=true"
+    require(returncode == 0 and marker in output, "IMBlocker profile did not complete its checks")
+    return "CONTROL_PASS" if isolated else "PASS"
 
 
 def run_profile(profile: str, candidate: Path, imblocker: bool, isolated: bool = False) -> str:
@@ -45,20 +62,20 @@ def run_profile(profile: str, candidate: Path, imblocker: bool, isolated: bool =
                             encoding="utf-8", errors="replace", timeout=420)
     directory = ROOT / ".toolchains/checks"
     directory.mkdir(parents=True, exist_ok=True)
-    log = directory / (profile + ("-imblocker" if imblocker else "") + ("-isolated" if isolated else "") + ".log")
+    run_id = str(time.time_ns())
+    log = directory / (profile + ("-imblocker" if imblocker else "") + ("-isolated" if isolated else "") + "-" + run_id + ".log")
     log.write_text(result.stdout, encoding="utf-8")
     if not imblocker:
         require(result.returncode == 0 and "OPTIONAL_WIDGET_OK rei=true" in result.stdout, f"Profile failed: {log}")
         print("PASS", profile, "real REI widget behavior")
     else:
-        # This exact pinned release fails independently of Hangul. Do not mask other failures.
-        require(result.returncode != 0 and "imblocker.mixins.json:MinecraftClientMixin" in result.stdout
-            and "onScreenChanged" in result.stdout and "'setScreen'" in result.stdout \
-            and "net/minecraft/client/Minecraft" in result.stdout, f"Unexpected IMBlocker result: {log}")
-        if isolated:
-            loaded = re.search(r"^\s*- hangul\s|^\s*Hangul [^\n]*\(hangul\)|^\s*- hangul \(", result.stdout, re.MULTILINE)
-            require(loaded is None, "Hangul was loaded in isolated control")
-        print("KNOWN_UPSTREAM_FAILURE", profile, "IMBlocker 7.3.2", "without Hangul" if isolated else "with Hangul")
+        pin = json.loads((ROOT / "mod-compatibility.json").read_text(encoding="utf-8"))["imblocker-" + platform]
+        try:
+            classification = classify_imblocker(result.returncode, result.stdout, pin, isolated)
+        except ValueError as failure:
+            raise ValueError(f"{failure}: {log}") from failure
+        print(classification, profile, "IMBlocker " + pin["release"], "without Hangul" if isolated else "with Hangul")
+    print("PROFILE_LOG", log)
     return result.stdout
 
 

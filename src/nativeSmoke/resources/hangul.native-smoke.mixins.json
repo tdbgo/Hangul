@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "kr.playcity.hangul.verification",
+  "compatibilityLevel": "JAVA_25",
+  "client": ["NativeClientSmoke"],
+  "injectors": {"defaultRequire": 1}
+}

@@ -10,6 +10,10 @@ def compatibilityMods = providers.gradleProperty('compatibilityMods').map { dire
 	fileTree(directory).matching { include '*.jar' }.files
 }.getOrElse([])
 def thirdPartyOnly = providers.gradleProperty('thirdPartyOnly').map { it.toBoolean() }.getOrElse(false)
+def nativeInputCheck = providers.gradleProperty('nativeInputCheck').map { it.toBoolean() }.getOrElse(false)
+if (nativeInputCheck && (!providers.gradleProperty('compatibilityJar').isPresent() || !compatibilityMods.isEmpty() || thirdPartyOnly)) {
+	throw new GradleException('Native input check requires one explicit candidate without optional mods or an isolated control')
+}
 neoForge {
 	enable {
 		version = project.neo_version
@@ -31,8 +35,9 @@ neoForge {
 			client()
 			sourceSet = sourceSets.verification
 			loadedMods = [mods.hangul_verification]
-			gameDirectory = layout.buildDirectory.dir('run-verification').get().asFile
-			systemProperty 'java.awt.headless', 'true'
+			gameDirectory = layout.buildDirectory.dir(nativeInputCheck ? 'run-native-input' : 'run-verification').get().asFile
+			systemProperty 'java.awt.headless', (!nativeInputCheck).toString()
+			systemProperty 'hangul.verification.nativeInputCheck', nativeInputCheck.toString()
 			systemProperty 'mixin.debug.countInjections', 'true'
 			systemProperty 'hangul.verification.jar', candidate.absolutePath
 			if (!compatibilityMods.isEmpty()) {
@@ -49,6 +54,6 @@ dependencies {
 }
 tasks.named('runVerification') {
 	if (!providers.gradleProperty('compatibilityJar').isPresent()) { dependsOn jar }
-	configureVerificationLaunch(it)
+	if (!nativeInputCheck) configureVerificationLaunch(it)
 }
 tasks.named('check') { dependsOn 'runVerification' }

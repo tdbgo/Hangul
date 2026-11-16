@@ -63,6 +63,27 @@ class UpdateDetectionTest(unittest.TestCase):
         self.data["neoforge"] += ["26.1.2.121", "26.1.2.122-beta", "26.1.2.122"]
         self.assertEqual(self.analyze()["changes"]["neoforge"], [{"minecraft": "26.1.2", "loader": "26.1.2.122"}])
 
+    def test_promoted_loader_becomes_stable_without_duplicate_preview(self):
+        self.data["fabric"][0]["stable"] = True
+        result = self.analyze()
+        self.assertEqual(result["latest_stable_fabric"], "0.20.1")
+        self.assertEqual(result["changes"]["loader_updates"], {"loader_version": "0.20.1"})
+
+    def test_optional_updates_match_game_loader_and_publication_date(self):
+        profiles = {"fabric-26.3": {"minecraft": "26.3", "loader": "fabric", "mods": [{"project": "rei", "version": "old"}]},
+                    "imblocker-fabric": {"project": "im", "version": "old-im"}}
+        def version(identity, game="26.3", loader="fabric", date="2026-11-11"):
+            return {"id": identity, "version_number": identity, "game_versions": [game], "loaders": [loader], "date_published": date}
+        versions = {"rei": [version("wrong-loader", loader="neoforge", date="2026-11-12"), version("old", date="2026-10-01")],
+                    "im": [version("old-im", date="2026-10-01"), version("new-im"), version("wrong-game", game="26.4", date="2026-11-12")]}
+        self.assertEqual(updates.optional_changes(profiles, versions),
+                         [{"profile": "fabric-26.3", "project": "im", "pinned": "old-im", "latest": "new-im", "version": "new-im"}])
+
+    def test_optional_metadata_missing_target_fails_closed(self):
+        profiles = {"fabric-26.3": {"minecraft": "26.3", "loader": "fabric", "mods": [{"project": "rei", "version": "old"}]}}
+        with self.assertRaisesRegex(ValueError, "No optional-mod"):
+            updates.optional_changes(profiles, {"rei": []})
+
 
 if __name__ == "__main__":
     unittest.main()

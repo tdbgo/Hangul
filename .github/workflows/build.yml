@@ -23,7 +23,7 @@ jobs:
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
       - name: Build and verify stable candidate
-        run: ./gradlew clean stageCompatibilityJar --no-daemon
+        run: ./gradlew clean stageCompatibilityJar nativeSmokeJar --no-daemon
       - name: Read declared compatibility matrix
         id: matrix
         run: python3 scripts/verification-matrix.py --github-output
@@ -142,18 +142,23 @@ jobs:
         with:
           name: verified-${{ matrix.platform }}
           path: candidate
-      - name: Check pinned REI widget and isolate IMBlocker incompatibility
+      - name: Check pinned REI widget and IMBlocker with an isolated control
         shell: pwsh
         run: |
           $candidate = (Get-ChildItem 'candidate/*-${{ matrix.platform }}.jar').FullName
           python scripts/verify-mod-compatibility.py '${{ matrix.profile }}' --candidate $candidate --check-imblocker
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Record NeoForge early-window IME policy separately from native tests
+        if: matrix.platform == 'neoforge'
+        run: python scripts/inspect-neoforge-ime.py --output .toolchains/checks/neoforge-ime-policy.json
       - name: Capture optional-mod diagnostics
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: optional-diagnostics-${{ matrix.profile }}
-          path: .toolchains/checks/*.log
+          path: |
+            .toolchains/checks/*.log
+            .toolchains/checks/neoforge-ime-policy.json
           if-no-files-found: warn
 
   artifact-gate:

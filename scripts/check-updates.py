@@ -1,5 +1,6 @@
 """Report upstream compatibility changes without editing or publishing the project."""
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 import json
 from pathlib import Path
@@ -30,7 +31,28 @@ def loader_key(version):
     return tuple(int(part) for part in core.split(".")), not suffix, suffix
 
 
-def analyze(data, declared_games, matrix, properties):
+def optional_changes(profiles, versions):
+    changes = []
+    for name, profile in profiles.items():
+        if "mods" not in profile:
+            continue
+        pins = list(profile["mods"])
+        imblocker = profiles.get("imblocker-" + profile["loader"])
+        if imblocker:
+            pins.append(imblocker)
+        for pin in pins:
+            matches = [version for version in versions[pin["project"]]
+                       if profile["minecraft"] in version["game_versions"] and profile["loader"] in version["loaders"]]
+            if not matches:
+                raise ValueError("No optional-mod metadata for " + name + ": " + pin["project"])
+            latest = max(matches, key=lambda version: version["date_published"])
+            if pin["version"] != latest["id"]:
+                changes.append({"profile": name, "project": pin["project"], "pinned": pin["version"],
+                                "latest": latest["id"], "version": latest["version_number"]})
+    return changes
+
+
+def analyze(data, declared_games, matrix, properties, optional_profiles=None):
     latest = data["minecraft"]["latest"]
     preview_base = latest["snapshot"].split("-")[0]
     games = [item["id"] for item in data["minecraft"]["versions"]
@@ -68,6 +90,7 @@ def analyze(data, declared_games, matrix, properties):
         if properties.get(key) != version:
             loader_updates[key] = version
     changes["loader_updates"] = loader_updates
+    changes["optional_mods"] = optional_changes(optional_profiles, data["optional"]) if optional_profiles else []
     return {"latest_minecraft": latest, "latest_stable_fabric": stable_fabric,
             "published_fabric": published["version_number"] if published else None,
             "changes": changes, "update_available": any(changes.values())}
@@ -83,9 +106,15 @@ def main():
                       if "=" in line and not line.startswith("#"))
     games = json.loads((ROOT / "src/main/resources/fabric.mod.json").read_text(encoding="utf-8"))["custom"]["hangul:tested_game_versions"]
     matrix = json.loads((ROOT / "platform-matrix.json").read_text(encoding="utf-8"))
-    report = analyze(data, games, matrix, properties)
+    optional_profiles = json.loads((ROOT / "mod-compatibility.json").read_text(encoding="utf-8"))
+    projects = {pin["project"] for profile in optional_profiles.values() for pin in profile.get("mods", [profile])}
+    optional_urls = {project: "https://api.modrinth.com/v2/project/" + project + "/version" for project in sorted(projects)}
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        responses = pool.map(upstream, optional_urls.values())
+        data["optional"] = {project: json.loads(response) for project, response in zip(optional_urls, responses)}
+    report = analyze(data, games, matrix, properties, optional_profiles)
     report["checked_at"] = datetime.now(timezone.utc).isoformat()
-    report["sources"] = URLS
+    report["sources"] = dict(URLS, optional_mods=optional_urls)
     text = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)

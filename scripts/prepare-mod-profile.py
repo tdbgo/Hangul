@@ -22,6 +22,7 @@ def require(condition: bool, message: str) -> None:
 
 def validate_metadata(pinned: dict, profile: dict, metadata: dict, projects: set, versions: set) -> dict:
     require(metadata["id"] == pinned["version"] and metadata["project_id"] == pinned["project"], "Pinned identity mismatch")
+    require(not pinned.get("release") or metadata["version_number"] == pinned["release"], "Pinned release name mismatch")
     require(profile["minecraft"] in metadata["game_versions"] and profile["loader"] in metadata["loaders"], "Game or loader mismatch")
     for dependency in metadata["dependencies"]:
         if dependency["dependency_type"] != "required":

@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "hangul_native_smoke",
+  "version": "1.0.0",
+  "name": "Hangul client startup check",
+  "environment": "client",
+  "depends": {"hangul": "*", "minecraft": "26.4-alpha.8", "fabricloader": ">=0.20.1", "java": ">=25"},
+  "mixins": [{"config": "hangul.native-smoke.mixins.json", "environment": "client"}]
+}
