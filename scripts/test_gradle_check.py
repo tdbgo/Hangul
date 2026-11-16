@@ -3,6 +3,7 @@ import importlib.util
 import io
 from pathlib import Path
 import subprocess
+import tempfile
 import unittest
 
 
@@ -59,6 +60,17 @@ class GradleCheckTest(unittest.TestCase):
         for attempts in (0, 4):
             with self.assertRaises(ValueError):
                 check.run(["gradlew"], attempts)
+
+    def test_windows_uses_absolute_batch_wrapper_from_both_shell_forms(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "build scripts"
+            root.mkdir()
+            batch = root / "gradlew.bat"
+            batch.write_text("@exit /b 0\n")
+            for name in ("gradlew", "gradlew.bat"):
+                result = check.wrapper_command([str(root / name), "verify", "-Ptarget=value"], windows=True)
+                self.assertEqual(result, [str(batch.resolve()), "verify", "-Ptarget=value"])
+        self.assertEqual(check.wrapper_command(["./gradlew", "verify"], windows=False), ["./gradlew", "verify"])
 
 
 if __name__ == "__main__":

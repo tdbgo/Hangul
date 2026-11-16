@@ -1,5 +1,6 @@
 """Retry dependency transport failures without retrying failed game or Mixin checks."""
 import argparse
+from pathlib import Path
 import re
 import subprocess
 import sys
@@ -17,7 +18,19 @@ def dependency_failure(output):
                           r"Plugin \[id: [^\n]+\] was not found", output, re.I))
 
 
+def wrapper_command(command, windows=None):
+    windows = sys.platform == "win32" if windows is None else windows
+    executable = Path(command[0])
+    if windows and executable.name in ("gradlew", "gradlew.bat"):
+        executable = executable.with_name("gradlew.bat").resolve(strict=True)
+        if not executable.is_file():
+            raise ValueError("Gradle wrapper must be a file")
+        return [str(executable), *command[1:]]
+    return list(command)
+
+
 def execute(command):
+    command = wrapper_command(command)
     lines = []
     with subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                           text=True, encoding="utf-8", errors="replace") as process:
