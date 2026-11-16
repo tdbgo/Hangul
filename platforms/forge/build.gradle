@@ -6,6 +6,7 @@ apply from: rootProject.file('gradle/platform-common.gradle')
 apply from: rootProject.file('gradle/verification-launch.gradle')
 def candidate = providers.gradleProperty('compatibilityJar').map { file(it) }
 	.getOrElse(tasks.jar.archiveFile.get().asFile)
+def headlessAssets = layout.buildDirectory.dir('verification/headless-assets')
 repositories {
 	minecraft.mavenizer(it)
 	maven fg.forgeMaven
@@ -45,6 +46,10 @@ minecraft {
 			workingDir = layout.buildDirectory.dir('run-client')
 			with(sourceSets.verification) {
 				workingDir = layout.buildDirectory.dir('run-verification')
+				// Keep the real client launch target, but do not rely on a user's asset directory.
+				inheritArgs = false
+				setArgs('--launchTarget', 'forge_userdev_client', '--version', 'MOD_DEV',
+					'--assetIndex', '{asset_index}', '--assetsDir', headlessAssets.get().asFile.absolutePath, '--gameDir', '.')
 				systemProperty 'java.awt.headless', 'true'
 				systemProperty 'mixin.debug.countInjections', 'true'
 				systemProperty 'hangul.verification.jar', candidate.absolutePath
@@ -80,6 +85,9 @@ tasks.matching { it.name == 'runVerificationClient' }.configureEach {
 	// SlimeLauncher supports omitting sound/texture downloads for pre-window checks.
 	// This does not skip Forge, game classes, Mixin application, or the result receipt.
 	systemProperty 'net.minecraftforge.launcher.skip.assets', 'true'
+	doFirst {
+		java.nio.file.Files.createDirectories(headlessAssets.get().asFile.toPath())
+	}
 	configureVerificationLaunch(it)
 }
 tasks.named('check') { dependsOn 'runVerificationClient' }
