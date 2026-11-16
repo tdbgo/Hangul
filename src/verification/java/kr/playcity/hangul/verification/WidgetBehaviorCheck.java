@@ -24,6 +24,7 @@ final class WidgetBehaviorCheck {
 		checkSearchTree();
 		checkSingleLine(font);
 		checkInputLifecycle(font);
+		checkInputEligibility(font);
 		checkMultiline(font);
 		SignBehaviorCheck.run(font);
 		System.out.println("WIDGET_BEHAVIOR_OK search, input lifecycle, render restoration, multiline layout reuse, and sign input");
@@ -40,6 +41,7 @@ final class WidgetBehaviorCheck {
 
 	private static void checkSingleLine(final CountingFont font) throws Exception {
 		EditBox box = new EditBox(font, 120, 20, Component.empty());
+		setField(box, "focused", true);
 		box.setValue("abcd");
 		box.moveCursorTo(1, false);
 		box.moveCursorTo(3, true);
@@ -135,6 +137,38 @@ final class WidgetBehaviorCheck {
 		box.preeditUpdated(preedit("나", 1));
 		box.charTyped(new CharacterEvent('나'));
 		check(box.getValue().equals("가") && visual.invoke(box).equals("가"), "length rejection does not leave a ghost preedit");
+	}
+
+	private static void checkInputEligibility(final CountingFont font) throws Exception {
+		EditBox box = new EditBox(font, 120, 20, Component.empty());
+		box.setValue("body");
+		Method accepts = Class.forName("kr.playcity.hangul.EditBoxInputCompat").getMethod("acceptsText", EditBox.class);
+		Method visual = box.getClass().getMethod("hangul$getVisualValue");
+		for (String state : List.of("focused", "active", "editable", "visible")) {
+			setField(box, "focused", true); setField(box, "active", true);
+			setField(box, "isEditable", true); setField(box, "visible", true);
+			setField(box, state.equals("editable") ? "isEditable" : state, false);
+			check(!(boolean) accepts.invoke(null, box), "inactive input state " + state);
+			box.preeditUpdated(preedit("한", 1));
+			check(visual.invoke(box).equals("body"), "inactive input rejects delayed composition " + state);
+		}
+		setField(box, "focused", true); setField(box, "visible", true);
+		check((boolean) accepts.invoke(null, box), "focused editor accepts text");
+		if (Arrays.stream(EditBox.class.getDeclaredFields()).noneMatch(field -> field.getName().equals("canChangeValue"))) return;
+		box.preeditUpdated(preedit("한", 1));
+		Method editMode = Arrays.stream(EditBox.class.getDeclaredMethods())
+			.filter(method -> method.getName().contains("hangul$onEditModeChanged")).findFirst().orElseThrow();
+		editMode.setAccessible(true);
+		editMode.invoke(box, false, new org.spongepowered.asm.mixin.injection.callback.CallbackInfo("setCanChangeValue", false));
+		setField(box, "canChangeValue", false);
+		check(!(boolean) accepts.invoke(null, box) && visual.invoke(box).equals("body"), "arrow focus clears composition without editing");
+		box.preeditUpdated(preedit("가", 1));
+		check(visual.invoke(box).equals("body"), "highlight-only input does not accept preedit");
+		setField(box, "canChangeValue", true);
+		check((boolean) accepts.invoke(null, box), "Enter/Space editing state accepts text");
+		box.preeditUpdated(preedit("가", 1));
+		check(visual.invoke(box).equals("body가"), "editing resumes with fresh composition");
+		System.out.println("EDIT_FOCUS_OK highlighted, editing, inactive, delayed preedit, and cleanup states");
 	}
 
 	private static Object layoutLines(final MultiLineEditBox box) throws Exception {

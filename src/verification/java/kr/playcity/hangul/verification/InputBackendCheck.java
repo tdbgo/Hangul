@@ -28,21 +28,21 @@ final class InputBackendCheck {
 		for (char ch = 'A'; ch <= 'Z'; ch++) {
 			int physical = key("KEY_" + ch);
 			// The second field must not override the physical key with a layout-dependent code.
-			KeyEvent event = new KeyEvent(physical, 12345, 0);
+			KeyEvent event = VerificationEvents.key(physical, 12345, 0);
 			check(letter.invoke(null, event).equals((int) ch), "physical letter " + ch);
 			check(plainLetter.invoke(null, event).equals((int) ch), "plain letter " + ch);
 			check(!(boolean) dispatch.invoke(null, 0L, key("PRESS"), event), "native letter passthrough " + ch);
 			for (String modifier : new String[]{"MOD_CONTROL", "MOD_ALT", "MOD_SUPER"}) {
-				check(plainLetter.invoke(null, new KeyEvent(physical, 0, key(modifier))).equals(-1),
+				check(plainLetter.invoke(null, VerificationEvents.key(physical, 0, key(modifier))).equals(-1),
 					"shortcut is not composed " + modifier + "/" + ch);
 			}
-			KeyEvent shifted = new KeyEvent(physical, 0, key("MOD_SHIFT"));
+			KeyEvent shifted = VerificationEvents.key(physical, 0, key("MOD_SHIFT"));
 			check(shifted.hasShiftDown() && plainLetter.invoke(null, shifted).equals((int) ch),
 				"shift preserves physical letter " + ch);
 		}
 		for (String name : new String[]{"KEY_UP", "KEY_DOWN", "KEY_LEFT", "KEY_RIGHT", "KEY_SPACE",
 				"KEY_RETURN", "KEY_BACKSPACE", "KEY_LALT", "KEY_RALT", "KEY_RCONTROL"}) {
-			KeyEvent event = new KeyEvent(key(name), 0, 0);
+			KeyEvent event = VerificationEvents.key(key(name), 0, 0);
 			check(letter.invoke(null, event).equals(-1), "non-letter " + name);
 			for (String action : new String[]{"PRESS", "RELEASE", "REPEAT"}) {
 				check(!(boolean) dispatch.invoke(null, 0L, key(action), event), "native passthrough " + name + "/" + action);

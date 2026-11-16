@@ -136,7 +136,7 @@ public final class HangulController {
 			}
 			focused = child;
 		}
-		if (focused instanceof EditBox box && box.canConsumeInput()) {
+		if (focused instanceof EditBox box && EditBoxInputCompat.acceptsText(box)) {
 			return box;
 		}
 

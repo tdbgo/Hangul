@@ -86,7 +86,7 @@ final class SignBehaviorCheck {
 	}
 
 	private static KeyEvent key(String name) throws Exception {
-		return new KeyEvent(com.mojang.blaze3d.platform.InputConstants.class.getField(name).getInt(null), 0, 0);
+		return VerificationEvents.key(com.mojang.blaze3d.platform.InputConstants.class.getField(name).getInt(null), 0, 0);
 	}
 
 	private static Field member(String name) throws Exception {

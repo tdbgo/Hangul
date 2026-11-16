@@ -21,6 +21,7 @@ public final class LoaderBehaviorCheck {
 				Class.forName("me.shedaniel.rei.impl.client.gui.widget.basewidgets.TextFieldWidget", false,
 					LoaderBehaviorCheck.class.getClassLoader()).getDeclaredMethods();
 				System.out.println("THIRD_PARTY_SMOKE_OK (no Hangul loaded)");
+				writeReceipt(0, 0, "control");
 				System.exit(0);
 			}
 			com.google.gson.JsonObject config;
@@ -49,6 +50,7 @@ public final class LoaderBehaviorCheck {
 						continue;
 					}
 					var methods = transformed.getDeclaredMethods();
+					var appliedGroups = new java.util.HashMap<String, Integer>();
 					transformed.getDeclaredFields();
 					targets.add(target);
 					for (var method : node.methods) {
@@ -59,7 +61,21 @@ public final class LoaderBehaviorCheck {
 								|| hook.desc.endsWith("/Invoker;"))) {
 								continue;
 							}
-							if (Integer.valueOf(0).equals(value(hook, "require"))) {
+							boolean applied = java.util.Arrays.stream(methods).anyMatch(m -> m.getName().contains(method.name));
+							var group = annotations(method.visibleAnnotations, method.invisibleAnnotations).stream()
+								.filter(a -> a.desc.endsWith("/Group;")).findFirst().orElse(null);
+							if (group != null) {
+								String name = (String) value(group, "name");
+								if (!Integer.valueOf(1).equals(value(group, "min")) || !Integer.valueOf(1).equals(value(group, "max")))
+									throw new AssertionError("Injection group must require exactly one hook: " + name);
+								// Redirect handler stubs may be merged even when their invocation is absent.
+								// Select by the original runtime call site, then require its installed handler.
+								boolean selected = hook.desc.endsWith("/Redirect;") ? hasInvocation(transformed, hook)
+									: list(value(hook, "method")).stream().anyMatch(selector -> java.util.Arrays.stream(methods)
+										.anyMatch(m -> selector.equals(m.getName()) || selector.equals(m.getName() + Type.getMethodDescriptor(m))));
+								appliedGroups.merge(name, selected && applied ? 1 : 0, Integer::sum);
+								if (!selected || !applied) continue;
+							} else if (Integer.valueOf(0).equals(value(hook, "require"))) {
 								boolean hasTarget = list(value(hook, "method")).stream().anyMatch(selector ->
 									java.util.Arrays.stream(methods).anyMatch(m -> selector.equals(m.getName())
 										|| selector.equals(m.getName() + Type.getMethodDescriptor(m))));
@@ -67,12 +83,14 @@ public final class LoaderBehaviorCheck {
 									continue;
 								}
 							}
-							boolean applied = java.util.Arrays.stream(methods).anyMatch(m -> m.getName().contains(method.name));
 							if (!applied) {
 								throw new AssertionError("Missing transformed hook: " + target + " / " + method.name);
 							}
 							hooks++;
 						}
+					}
+					for (var group : appliedGroups.entrySet()) {
+						if (group.getValue() != 1) throw new AssertionError("Expected one applied hook in " + group.getKey() + ": " + group.getValue());
 					}
 				}
 			}
@@ -83,22 +101,46 @@ public final class LoaderBehaviorCheck {
 			InputBackendCheck.run();
 			ImeWidthBehaviorCheck.run();
 			WidgetBehaviorCheck.run();
+			CommandBehaviorCheck.run();
 			if (Boolean.getBoolean("hangul.verification.rei")) OptionalWidgetBehaviorCheck.run();
 			if (mod.getJarEntry("META-INF/mods.toml") != null) {
 				verifyForgePackMetadata(mod);
 			}
-			String result = System.getProperty("hangul.verification.result");
-			if (result != null) {
-				byte[] candidate = java.nio.file.Files.readAllBytes(java.nio.file.Path.of(System.getProperty("hangul.verification.jar")));
-				String hash = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(candidate));
-				java.nio.file.Files.writeString(java.nio.file.Path.of(result),
-					"PASS sha256=" + hash + " targets=" + targets.size() + " hooks=" + hooks + "\n");
-			}
+			writeReceipt(targets.size(), hooks, "candidate");
 			System.exit(0);
 		} catch (Throwable failure) {
 			failure.printStackTrace();
 			System.exit(1);
 		}
+	}
+
+	private static void writeReceipt(int targets, int hooks, String scope) throws Exception {
+		String result = System.getProperty("hangul.verification.result");
+		if (result == null) return;
+		byte[] candidate = java.nio.file.Files.readAllBytes(java.nio.file.Path.of(System.getProperty("hangul.verification.jar")));
+		String hash = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(candidate));
+		java.nio.file.Files.writeString(java.nio.file.Path.of(result),
+			"PASS sha256=" + hash + " targets=" + targets + " hooks=" + hooks + " scope=" + scope + "\n");
+	}
+
+	private static boolean hasInvocation(Class<?> type, org.objectweb.asm.tree.AnnotationNode hook) throws java.io.IOException {
+		var source = new ClassNode();
+		try (var input = type.getResourceAsStream("/" + type.getName().replace('.', '/') + ".class")) {
+			if (input == null) throw new java.io.IOException("Missing runtime class resource " + type.getName());
+			new ClassReader(input).accept(source, 0);
+		}
+		for (Object site : list(value(hook, "at"))) {
+			String target = (String) value((org.objectweb.asm.tree.AnnotationNode) site, "target");
+			for (var method : source.methods) {
+				if (list(value(hook, "method")).stream().noneMatch(selector -> selector.equals(method.name)
+					|| selector.equals(method.name + method.desc))) continue;
+				for (var instruction : method.instructions) {
+					if (instruction instanceof org.objectweb.asm.tree.MethodInsnNode call
+						&& ("L" + call.owner + ";" + call.name + call.desc).equals(target)) return true;
+				}
+			}
+		}
+		return false;
 	}
 	private static void verifyForgePackMetadata(JarFile mod) throws java.io.IOException {
 		var entry = mod.getJarEntry("pack.mcmeta");

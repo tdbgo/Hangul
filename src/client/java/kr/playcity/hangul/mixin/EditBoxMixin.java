@@ -3,6 +3,7 @@ package kr.playcity.hangul.mixin;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import kr.playcity.hangul.HangulController;
+import kr.playcity.hangul.EditBoxInputCompat;
 import kr.playcity.hangul.InlinePreedit;
 import kr.playcity.hangul.NativeImeSupport;
 import kr.playcity.hangul.PreeditValueProvider;
@@ -58,6 +59,11 @@ public abstract class EditBoxMixin implements PreeditValueProvider {
 
 	@Inject(method = "preeditUpdated", at = @At("HEAD"), cancellable = true)
 	private void hangul$onPreedit(final PreeditEvent event, final CallbackInfoReturnable<Boolean> callback) {
+		if (!EditBoxInputCompat.acceptsText((EditBox) (Object) this)) {
+			hangul$clearPreedit();
+			callback.setReturnValue(false);
+			return;
+		}
 		if (HangulController.isForcedHangulMode((EditBox) (Object) this)
 			|| event == null || event.fullText().isEmpty()) {
 			hangul$clearPreedit();
@@ -76,6 +82,15 @@ public abstract class EditBoxMixin implements PreeditValueProvider {
 	@Inject(method = "setFocused", at = @At("HEAD"))
 	private void hangul$onFocusChanged(final boolean focused, final CallbackInfo callback) {
 		if (!focused) {
+			hangul$clearPreedit();
+			HangulController.onFocusLost((EditBox) (Object) this);
+		}
+	}
+
+	// Older widgets have no independent editing state; setFocused remains their cleanup hook.
+	@Inject(method = "setCanChangeValue(Z)V", at = @At("HEAD"), require = 0, expect = 0)
+	private void hangul$onEditModeChanged(final boolean editable, final CallbackInfo callback) {
+		if (!editable) {
 			hangul$clearPreedit();
 			HangulController.onFocusLost((EditBox) (Object) this);
 		}

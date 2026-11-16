@@ -117,7 +117,7 @@ public final class BinaryCompatibilityCheck {
 				"New sign layout must use the verified EditBox path");
 			return;
 		}
-		int renderAlternatives = 0, renderMatches = 0;
+		int renderAlternatives = 0, renderMatches = 0, commandAlternatives = 0, commandMatches = 0;
 		for (var field : mod.fields) {
 			for (var annotation : annotations(field.visibleAnnotations, field.invisibleAnnotations)) {
 				if (annotation.desc.endsWith("/Shadow;") && !external) {
@@ -128,6 +128,9 @@ public final class BinaryCompatibilityCheck {
 		for (var method : mod.methods) {
 			var renderGroup = annotations(method.visibleAnnotations, method.invisibleAnnotations).stream()
 				.filter(annotation -> annotation.desc.endsWith("/Group;") && "hangulInlineRender".equals(value(annotation, "name")))
+				.findFirst().orElse(null);
+			var commandGroup = annotations(method.visibleAnnotations, method.invisibleAnnotations).stream()
+				.filter(annotation -> annotation.desc.endsWith("/Group;") && "hangulCommandSuggestions".equals(value(annotation, "name")))
 				.findFirst().orElse(null);
 			for (var instruction : method.instructions) {
 				if (instruction instanceof MethodInsnNode call && gameClass(call.owner)) {
@@ -160,15 +163,23 @@ public final class BinaryCompatibilityCheck {
 					boolean screenHook = method.name.equals("hangul$endFallbackSession")
 						&& (mod.name.endsWith("/MinecraftScreenMixin") || mod.name.endsWith("/GuiScreenMixin"));
 					boolean renderAlternative = renderGroup != null && annotation.desc.endsWith("/WrapMethod;");
+					boolean commandAlternative = commandGroup != null && annotation.desc.endsWith("/Redirect;");
+					boolean editModeHook = mod.name.endsWith("/EditBoxMixin") && method.name.equals("hangul$onEditModeChanged")
+						&& selector.equals("setCanChangeValue(Z)V") && Integer.valueOf(0).equals(value(annotation, "require"));
 					if (renderAlternative) {
 						check(Integer.valueOf(1).equals(value(renderGroup, "min")) && Integer.valueOf(1).equals(value(renderGroup, "max"))
 							&& Integer.valueOf(0).equals(value(annotation, "require")) && selector.contains("("),
 							"Render alternatives must require exactly one fully described target");
 						renderAlternatives++;
 						renderMatches += methods.size();
+					} else if (commandAlternative) {
+						check(Integer.valueOf(1).equals(value(commandGroup, "min")) && Integer.valueOf(1).equals(value(commandGroup, "max"))
+							&& Integer.valueOf(0).equals(value(annotation, "require")), "Command alternatives must require exactly one invocation");
+						commandAlternatives++;
+						check(methods.size() == 1, "Command update method must exist");
 					} else if (screenHook) {
 						screenHooks += methods.size();
-					} else {
+					} else if (!editModeHook) {
 						check(!methods.isEmpty(), "Injection target " + target + "." + selector);
 					}
 					for (var injected : methods) {
@@ -187,20 +198,29 @@ public final class BinaryCompatibilityCheck {
 							if (!"INVOKE".equals(value(at, "value")) || invokeTarget == null) {
 								continue;
 							}
-							boolean found = false;
+							int found = 0;
 							for (var instruction : injected.instructions) {
 								if (instruction instanceof MethodInsnNode call
 									&& invokeTarget.equals("L" + call.owner + ";" + call.name + call.desc)) {
-									found = true;
+									found++;
 								}
 							}
-							check(found, "Invocation site " + target + "." + injected.name + " -> " + invokeTarget);
+							if (commandAlternative) commandMatches += found;
+							else check(found != 0, "Invocation site " + target + "." + injected.name + " -> " + invokeTarget);
 						}
 					}
 				}
 			}
 		}
 		if (renderAlternatives != 0) check(renderAlternatives == 2 && renderMatches == 1, "Exactly one render signature must match " + target);
+		if (commandAlternatives != 0) check(commandAlternatives == 2 && commandMatches == 1, "Exactly one command suggestion invocation must match " + target);
+		if (mod.name.endsWith("/CommandResultCompat")) {
+			String result = "net/minecraft/commands/SuggestionBox$Result";
+			if (node(result) != null) {
+				check(member(result, "computeSuggestions", "(I)Ljava/util/concurrent/CompletableFuture;", true), "Command-result suggestions API");
+				check(member(result, "parseResults", "()Lcom/mojang/brigadier/ParseResults;", true), "Command-result parse API");
+			}
+		}
 	}
 
 	private ClassNode node(final String name) throws Exception {
