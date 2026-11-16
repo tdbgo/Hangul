@@ -1,5 +1,17 @@
 # Compatibility policy
 
+## Candidate beta.12: Snapshot 6–8 and input focus
+
+The candidate adds exactly `26.4-snapshot-6`, `26.4-snapshot-7`, and `26.4-snapshot-8` to Fabric/Quilt. Compilation remains on 26.2. Snapshot 7 adds a separate highlighted-but-not-editing state and changes the test event constructor; Snapshot 8 moves command suggestions into `SuggestionBox.Result`. The command adapter requires exactly one old/new invocation, and the input adapter rejects inactive or non-editing fields. The same packaged candidate is tested on each declared runtime.
+
+Fabric 0.20.1 is now the stable verification loader. Quilt uses 0.31.0-beta.6. The matrix retains all older exact pairs and adds NeoForge 26.1.2.126 / 26.3.0.103 and Forge 26.1.2-64.1.6 / 26.2-65.1.6 / 26.3-66.1.8. A preview loader equal to the stable loader does not create duplicate jobs.
+
+The local Windows matrix passed 88 distinct combinations: 25 each for stable Fabric and Quilt, 12 representative minimum-Fabric targets, 14 exact NeoForge pairs, and 12 exact Forge pairs. Four repeated baseline checks brought the successful execution count to 92. Packaging and the beta.11 runtime-class comparison also passed for all three platform files; each has six added or changed runtime classes. The distributed files remain under 96 KiB without extra runtime dependencies.
+
+Snapshot 8 reached the title screen and shut down normally with explicit OpenGL and Vulkan settings in separate launches of an isolated Windows client. A test-only Mixin exits after the title screen is ready; no keyboard, world, or IME state is changed by that fixture. These startup checks do not establish composition or candidate-window behavior.
+
+The tester reproduced a missing Windows Hanja candidate window with NeoForge 26.3.0.103's default early loading window, then confirmed candidate display, selection and Esc cancellation after changing only the isolated instance's `earlyWindowControl` to false and restarting with the identical candidate. This is a tested workaround, not a default-setting fix. See [optional-mod compatibility](MOD_COMPATIBILITY.md) for FML source inspection and IMBlocker 7.3.3 control results, and [release readiness](RELEASE_READINESS.md) for the final matrix and publication status.
+
 Hangul shares its input and search sources across loaders. The Fabric JAR also runs on Quilt; NeoForge and Forge have separate JARs. No separate API mod, compatibility bridge or additional native library is required. Stable 26.2 remains the compilation target. The compatibility gate checks each exact platform JAR on the declared loader/version combinations.
 
 ## Published beta.11: Snapshot 4–5 and current loaders
