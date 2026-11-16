@@ -77,6 +77,9 @@ jar { from(tasks.named('prepareForgeMixinConfig')) }
 tasks.matching { it.name == 'runVerificationClient' }.configureEach {
 	if (!providers.gradleProperty('compatibilityJar').isPresent()) { dependsOn jar }
 	dependsOn 'stageVerificationMods'
+	// SlimeLauncher supports omitting sound/texture downloads for pre-window checks.
+	// This does not skip Forge, game classes, Mixin application, or the result receipt.
+	systemProperty 'net.minecraftforge.launcher.skip.assets', 'true'
 	configureVerificationLaunch(it)
 }
 tasks.named('check') { dependsOn 'runVerificationClient' }

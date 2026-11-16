@@ -23,7 +23,7 @@ jobs:
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
       - name: Build and verify stable candidate
-        run: ./gradlew clean stageCompatibilityJar nativeSmokeJar --no-daemon
+        run: python3 scripts/run-gradle-check.py -- ./gradlew clean stageCompatibilityJar nativeSmokeJar --no-daemon
       - name: Read declared compatibility matrix
         id: matrix
         run: python3 scripts/verification-matrix.py --github-output
@@ -60,9 +60,9 @@ jobs:
         shell: bash
         run: |
           chmod +x ./gradlew
-          ./gradlew verifyMixinApplication --no-daemon -PcompatibilityJar=candidate/hangul.jar -PverificationFixture=candidate/verification.jar -Pminecraft_version=${{ matrix.minecraft }} -Ploader_version=${{ matrix.loader }}
+          python3 scripts/run-gradle-check.py -- ./gradlew verifyMixinApplication --no-daemon -PcompatibilityJar=candidate/hangul.jar -PverificationFixture=candidate/verification.jar -Pminecraft_version=${{ matrix.minecraft }} -Ploader_version=${{ matrix.loader }}
           if [ "${{ matrix.quilt }}" = "true" ]; then
-            ./gradlew verifyQuiltApplication --no-daemon -PcompatibilityJar=candidate/hangul.jar -PverificationFixture=candidate/verification.jar -Pminecraft_version=${{ matrix.minecraft }}
+            python3 scripts/run-gradle-check.py -- ./gradlew verifyQuiltApplication --no-daemon -PcompatibilityJar=candidate/hangul.jar -PverificationFixture=candidate/verification.jar -Pminecraft_version=${{ matrix.minecraft }}
           fi
 
   platform-build:
@@ -81,7 +81,7 @@ jobs:
           distribution: 'microsoft'
       - name: Build and verify platform candidate
         shell: pwsh
-        run: ./gradlew.bat -Pplatform=${{ matrix.platform }} :${{ matrix.platform }}:clean :${{ matrix.platform }}:build --no-daemon
+        run: python scripts/run-gradle-check.py -- ./gradlew.bat -Pplatform=${{ matrix.platform }} :${{ matrix.platform }}:clean :${{ matrix.platform }}:build --no-daemon
       - uses: actions/upload-artifact@v7
         with:
           name: verified-${{ matrix.platform }}
@@ -116,7 +116,7 @@ jobs:
           $property = if ($platform -eq 'neoforge') { 'neo_version' } else { 'forge_version' }
           $task = if ($platform -eq 'neoforge') { 'runVerification' } else { 'runVerificationClient' }
           foreach ($target in $targets) {
-            & ./gradlew.bat "-Pplatform=$platform" ":${platform}:$task" "-P${property}=$($target.loader)" "-PcompatibilityJar=$candidate" --no-daemon
+            & python scripts/run-gradle-check.py -- ./gradlew.bat "-Pplatform=$platform" ":${platform}:$task" "-P${property}=$($target.loader)" "-PcompatibilityJar=$candidate" --no-daemon
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             if ((Get-FileHash $candidate).Hash -ne $hash) { throw 'Candidate changed' }
           }

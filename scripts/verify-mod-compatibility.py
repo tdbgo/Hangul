@@ -58,7 +58,8 @@ def run_profile(profile: str, candidate: Path, imblocker: bool, isolated: bool =
         command.append("-PwithIMBlocker=true")
     if isolated:
         command.append("-PthirdPartyOnly=true")
-    result = subprocess.run(command, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+    result = subprocess.run([sys.executable, str(ROOT / "scripts/run-gradle-check.py"), "--"] + command,
+                            cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                             encoding="utf-8", errors="replace", timeout=420)
     directory = ROOT / ".toolchains/checks"
     directory.mkdir(parents=True, exist_ok=True)
