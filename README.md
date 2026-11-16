@@ -10,19 +10,19 @@ Lightweight native Korean (Hangul) IME input and Korean-aware search for Minecra
 
 [Modrinth에서 다운로드](https://modrinth.com/mod/hangul) · [소스 코드](https://github.com/tdbgo/Hangul) · [문제 신고](https://github.com/tdbgo/Hangul/issues)
 
-최신 공개 파일은 `1.3.0-beta.11`입니다. Fabric·Quilt는 Minecraft 26.4 Snapshot 5까지, NeoForge·Forge는 26.3까지 지원합니다. Windows 전각 영문 대응 옵션과 REI 입력창의 조합 표시도 제공합니다. 완료된 검사와 실제 입력기 확인 범위는 [검증 기록](docs/RELEASE_READINESS.md)에 정리합니다.
+최신 공개 파일은 `1.3.0-beta.12`입니다. Fabric·Quilt는 Minecraft 26.4 Snapshot 8까지, NeoForge·Forge는 26.3까지 지원합니다. Windows 전각 영문 대응 옵션과 REI 입력창의 조합 표시도 제공합니다. 완료된 검사와 실제 입력기 확인 범위는 [검증 기록](docs/RELEASE_READINESS.md)에 정리합니다.
 
 | 로더 | 최신 파일 버전 | 지원 범위 |
 | --- | --- | --- |
-| Fabric·Quilt | 1.3.0-beta.11 | 26.1–26.3 및 명시된 시험판, 26.4 Snapshot 1–5 |
-| NeoForge | 1.3.0-beta.11 | 26.1, 26.1.1, 26.1.2, 26.2, 26.3 |
-| Forge | 1.3.0-beta.11 | 26.1, 26.1.1, 26.1.2, 26.2, 26.3 |
+| Fabric·Quilt | 1.3.0-beta.12 | 26.1–26.3 및 명시된 시험판, 26.4 Snapshot 1–8 |
+| NeoForge | 1.3.0-beta.12 | 26.1, 26.1.1, 26.1.2, 26.2, 26.3 |
+| Forge | 1.3.0-beta.12 | 26.1, 26.1.1, 26.1.2, 26.2, 26.3 |
 
 모든 로더가 같은 릴리스 번호를 가질 필요는 없습니다. 실행 코드가 달라진 파일만 새로 배포합니다. 버전 번호·지원 선언·리소스만 바뀐 파일은 새로 올리지 않으며, 지원 선언은 다음 코드 업데이트에 함께 반영합니다.
 
-### beta.11 업데이트
+### beta.12 업데이트
 
-26.4 Snapshot 4·5의 입력창 렌더링과 새 표지판 입력줄에 대응했습니다. NeoForge·Forge 및 시험판 Fabric Loader의 추가 조합도 자동 검사를 통과했습니다. Snapshot 5의 DXGI 꺼짐·켜짐에서 한글·한자 입력이 정상이라는 사용자 확인을 받았습니다.
+26.4 Snapshot 6~8 지원을 추가하고, 입력창 조합 처리와 명령어 추천 호환성을 개선했습니다. 최신 로더 조합의 자동 검사와 Snapshot 8의 한글·한자 입력 확인을 마쳤습니다. NeoForge 26.3에서 한자 후보창이 보이지 않으면 [초기 로딩 창 설정](docs/MOD_COMPATIBILITY.md#windows-neoforge-한자-후보창)을 확인해 주세요.
 
 ## 기본 사용법
 

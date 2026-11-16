@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0-beta.12 (2026-11-17)
+
+- Minecraft 26.4 Snapshot 6~8 지원 추가(Fabric·Quilt)
+- 입력창 조합 처리·명령어 추천 호환성 개선
+- 최신 로더 호환성 검증
+- NeoForge 26.3 한자 후보창 미표시: `config/fml.toml`에서 `earlyWindowControl=false` 설정 후 재시작
+
 ## 1.3.0-beta.11 (2026-10-23)
 
 Fabric·Quilt에 Minecraft 26.4 Snapshot 4·5 지원을 추가했습니다. 새 입력창과 표지판에서 한글 조합 표시를 수정하고, NeoForge·Forge 지원 로더를 추가했습니다.

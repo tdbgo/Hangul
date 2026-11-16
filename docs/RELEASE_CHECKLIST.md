@@ -18,15 +18,15 @@
 
 ```powershell
 $candidateJars = @(
-    'build/libs/hangul-1.3.0-beta.11-fabric.jar',
-    'platforms/neoforge/build/libs/hangul-1.3.0-beta.11-neoforge.jar',
-    'platforms/forge/build/libs/hangul-1.3.0-beta.11-forge.jar'
+    'build/libs/hangul-1.3.0-beta.12-fabric.jar',
+    'platforms/neoforge/build/libs/hangul-1.3.0-beta.12-neoforge.jar',
+    'platforms/forge/build/libs/hangul-1.3.0-beta.12-forge.jar'
 )
 python scripts/verify-artifacts.py @candidateJars
-python scripts/stage-release.py @candidateJars --previous-dir .toolchains/release-baseline-beta11 --output-dir build/release/1.3.0-beta.11
+python scripts/stage-release.py @candidateJars --previous-dir .toolchains/release-baseline-beta11 --output-dir build/release/1.3.0-beta.12
 ```
 
-위 예시는 공통 입력 코드가 바뀐 beta.11 후보를 공개 beta.10 파일과 비교합니다. 특정 플랫폼만 코드가 바뀌었다면 버전 설정과 선택 목록도 그 플랫폼만 포함하도록 맞춥니다. 스테이징은 업로드가 아니며, 실사용 검사와 릴리스 문구 검토를 마친 뒤 게시합니다.
+위 예시는 공통 입력 코드가 바뀐 beta.12 후보를 공개 beta.11 파일과 비교합니다. 특정 플랫폼만 코드가 바뀌었다면 버전 설정과 선택 목록도 그 플랫폼만 포함하도록 맞춥니다. 스테이징은 업로드가 아니며, 실사용 검사와 릴리스 문구 검토를 마친 뒤 게시합니다.
 
 게이트는 전체 내용과 실행 클래스 바이트를 대조합니다. 실행 클래스가 같다면 새 지원 버전·리소스·버전이 달라져도 새 파일을 거부합니다. ZIP 구성과 텍스트 줄바꿈 차이, 미선택 플랫폼, 이전 파일 누락, 중복·누락된 플랫폼과 배포 폴더의 잔여 파일도 배포 사유로 인정하지 않습니다. 기존 파일이 다른 내용이면 덮어쓰지 않습니다.
 

@@ -1,8 +1,8 @@
 # Compatibility policy
 
-## Candidate beta.12: Snapshot 6–8 and input focus
+## Published beta.12: Snapshot 6–8 and input focus
 
-The candidate adds exactly `26.4-snapshot-6`, `26.4-snapshot-7`, and `26.4-snapshot-8` to Fabric/Quilt. Compilation remains on 26.2. Snapshot 7 adds a separate highlighted-but-not-editing state and changes the test event constructor; Snapshot 8 moves command suggestions into `SuggestionBox.Result`. The command adapter requires exactly one old/new invocation, and the input adapter rejects inactive or non-editing fields. The same packaged candidate is tested on each declared runtime.
+Beta.12 adds exactly `26.4-snapshot-6`, `26.4-snapshot-7`, and `26.4-snapshot-8` to Fabric/Quilt. Compilation remains on 26.2. Snapshot 7 adds a separate highlighted-but-not-editing state and changes the test event constructor; Snapshot 8 moves command suggestions into `SuggestionBox.Result`. The command adapter requires exactly one old/new invocation, and the input adapter rejects inactive or non-editing fields. The same packaged candidate is tested on each declared runtime.
 
 Fabric 0.20.1 is now the stable verification loader. Quilt uses 0.31.0-beta.6. The matrix retains all older exact pairs and adds NeoForge 26.1.2.126 / 26.3.0.103 and Forge 26.1.2-64.1.6 / 26.2-65.1.6 / 26.3-66.1.8. A preview loader equal to the stable loader does not create duplicate jobs.
 
@@ -10,7 +10,11 @@ The local Windows matrix passed 88 distinct combinations: 25 each for stable Fab
 
 Snapshot 8 reached the title screen and shut down normally with explicit OpenGL and Vulkan settings in separate launches of an isolated Windows client. A test-only Mixin exits after the title screen is ready; no keyboard, world, or IME state is changed by that fixture. These startup checks do not establish composition or candidate-window behavior.
 
+In a separate launch without the startup fixture, the tester confirmed immediate Korean composition without F6 and Hanja candidate display, selection and Esc cancellation in Snapshot 8's new-world name field. This is a native-input tester report, not a result of the automated startup checks.
+
 The tester reproduced a missing Windows Hanja candidate window with NeoForge 26.3.0.103's default early loading window, then confirmed candidate display, selection and Esc cancellation after changing only the isolated instance's `earlyWindowControl` to false and restarting with the identical candidate. This is a tested workaround, not a default-setting fix. See [optional-mod compatibility](MOD_COMPATIBILITY.md) for FML source inspection and IMBlocker 7.3.3 control results, and [release readiness](RELEASE_READINESS.md) for the final matrix and publication status.
+
+The [remote CI](https://github.com/tdbgo/Hangul/actions/runs/43891069698) passed all 66 jobs on `3ad87e0`, including the final artifact gate. Beta.12 was published on 2026-11-17 KST on [GitHub](https://github.com/tdbgo/Hangul/releases/tag/v1.3.0-beta.12) and [Modrinth](https://modrinth.com/mod/hangul/versions). All three platform files have runtime code changes; downloaded bytes from both services match the locally tested JARs.
 
 Hangul shares its input and search sources across loaders. The Fabric JAR also runs on Quilt; NeoForge and Forge have separate JARs. No separate API mod, compatibility bridge or additional native library is required. Stable 26.2 remains the compilation target. The compatibility gate checks each exact platform JAR on the declared loader/version combinations.
 
